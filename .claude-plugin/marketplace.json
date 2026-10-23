@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Spydell: от идеи к концепции, требованиям, roadmap и срезам OpenSpec.",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "plugins": [
     {
       "name": "spydell",
       "source": "./",
       "description": "Семь навыков Spydell: прояснение замысла, roadmap, spec-review, критик, оценщик, системный анализ и ИИ-агенты.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "category": "productivity",
       "keywords": ["spydell", "requirements", "roadmap", "openspec", "sdd"]
     }

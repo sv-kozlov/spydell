@@ -53,7 +53,10 @@ operations:
         Verify predecessor outcomes against actual code/build and evidence at their declared boundary:
         implementation start, integration or release. Integration/release-only dependencies do not block
         independent implementation earlier; genuinely dependent next-wave work still waits for wave acceptance.
-        Run ordinary tests and independent exact-diff code review; fix every confirmed finding and rerun checks.
+        Run ordinary tests and independent exact-diff code review on at least two axes: code standards
+        (one reviewer per stack) and spec/contract compliance with a requirement-scenario-test matrix.
+        Reviewers read through git diff/show, never change the shared working copy and test in a separate worktree.
+        Fix every confirmed finding and rerun checks.
         Material fixes require a complete review of the updated diff, not only the previously flagged lines.
       - >-
         For user-facing functions, build a QA plan from the actual integrated diff and regression risks;

@@ -1,6 +1,6 @@
 {
   "name": "spydell",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Семья навыков Spydell: представление → прояснение аспектов → требования → roadmap → specs → design → задачи, с передачей в OpenSpec.",
   "author": {
     "name": "sv-kozlov",
