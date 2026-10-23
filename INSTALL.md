@@ -120,6 +120,11 @@ claude plugin update spydell@spydell
 ```bash
 codex plugin marketplace upgrade spydell
 ```
+```bash
+codex plugin add spydell@spydell
+```
+
+После обновления откройте новую сессию агента.
 
 Схему в проекте обновляет повторный запуск `install.py` из свежего клона. Совпадающие файлы пропускаются.
 Если skill или schema отличается, сначала выполните dry-run, а для сознательной замены укажите `--replace`:
