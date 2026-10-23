@@ -1,0 +1,27 @@
+{
+  "name": "spydell",
+  "version": "0.1.0",
+  "description": "Семья навыков Spydell: представление → прояснение аспектов → требования → roadmap → specs → design → задачи, с передачей в OpenSpec.",
+  "author": {
+    "name": "sv-kozlov",
+    "url": "https://github.com/sv-kozlov"
+  },
+  "homepage": "https://github.com/sv-kozlov/spydell",
+  "repository": "https://github.com/sv-kozlov/spydell",
+  "keywords": ["spydell", "requirements", "roadmap", "openspec", "sdd", "critic", "evaluation"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Spydell",
+    "shortDescription": "Концепция, требования, roadmap и срезы OpenSpec",
+    "longDescription": "Spydell ведёт инициативу от общего представления через прояснение аспектов к требованиям, roadmap по волнам и срезам OpenSpec; дополнительно — критический стресс-тест, план оценки, системный анализ и оценка ИИ-агентов.",
+    "developerName": "sv-kozlov",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "websiteURL": "https://github.com/sv-kozlov/spydell",
+    "defaultPrompt": [
+      "Используй spydell: разверни идею в концепцию, затем обсудим открытые аспекты.",
+      "Используй spydell-roadmap для согласованных требований."
+    ],
+    "screenshots": []
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spydell Critic"
+  short_description: "Стресс-тест проектных решений"
+  default_prompt: "Используй $spydell-critic, чтобы провести жёсткий и доказательный стресс-тест проекта."

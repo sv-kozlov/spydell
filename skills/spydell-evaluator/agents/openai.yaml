@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spydell Evaluator"
+  short_description: "Проверка эффективности и результатов"
+  default_prompt: "Используй $spydell-evaluator, чтобы спроектировать доказательную оценку эффективности проекта."

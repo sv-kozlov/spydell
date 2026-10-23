@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spydell Roadmap"
+  short_description: "Эпики, зависимости и волны реализации"
+  default_prompt: "Используй $spydell-roadmap для построения волн и зависимостей по согласованным требованиям."

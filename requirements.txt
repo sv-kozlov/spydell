@@ -1,0 +1,2 @@
+# Only needed when merging project OpenSpec configuration or running tests.
+PyYAML>=6.0,<7

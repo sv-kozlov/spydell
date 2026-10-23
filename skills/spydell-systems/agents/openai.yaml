@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spydell Systems"
+  short_description: "Анализ сложных динамических систем"
+  default_prompt: "Используй $spydell-systems, чтобы построить системную модель, сценарии и цепочки передачи воздействий."

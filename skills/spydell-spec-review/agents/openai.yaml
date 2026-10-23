@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spydell Spec Review"
+  short_description: "Ревью спецификаций и готовности волн"
+  default_prompt: "Используй $spydell-spec-review для независимой проверки спецификаций и предпосылок следующей волны."

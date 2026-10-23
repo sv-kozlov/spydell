@@ -1,0 +1,87 @@
+# Preserve an existing project default; select spydell explicitly for new slices.
+# New Spydell slices explicitly use: openspec new change <name> --schema spydell
+schema: spec-driven
+
+context: |
+  This project follows Spydell from concept, through clarification and requirements, to roadmap and OpenSpec.
+  Use spydell explicitly for new Spydell slices. Do not migrate existing changes implicitly.
+  Clarify material choices at the current level using grilling; investigate facts independently.
+  Reuse accepted decisions. A concept can remain a draft with open questions; technical choices follow requirements.
+  Read the source paths and revisions in the proposal. Keep one canonical source for each decision and requirement.
+  A small, already clear change needs no artificial initiative package; record its request and acceptance directly.
+  Follow repository AGENTS.md and the applicable implementation, review and QA skills.
+  File existence, completed task boxes and OpenSpec validation do not establish wave acceptance.
+  Dependent next-wave specs remain provisional until predecessor implementation and evidence are reviewed.
+
+rules:
+  proposal:
+    - >-
+      Link concept, approved requirements, decisions and roadmap where they exist; record source revisions,
+      stable epic/slice IDs, wave, scope and deferred work. Do not invent sources or repeat an accepted interview.
+    - >-
+      For each predecessor, name the required outcome, reason, readiness evidence and whether it blocks
+      implementation, integration or release. Distinguish verified baseline from proposed active changes.
+  specs:
+    - >-
+      Describe observable behavior, rules, applicable alternatives, errors and acceptance scenarios before
+      selecting implementation mechanisms. Trace requirements to accepted outcomes or decisions.
+    - >-
+      Check existing capabilities and active changes for conflicting or overlapping requirements and delta bases.
+      Return unresolved material product choices to grilling; never normalize a code defect into a requirement.
+  design:
+    - >-
+      Read the complete specs for all declared capabilities first. With explicit skip_specs for a change having
+      no behavior delta, justify that scope instead. File presence alone does not establish semantic completeness.
+    - >-
+      Explain technical choices and alternatives. Confirm actual parallelism against shared contracts, files,
+      migrations and environments; repository approval rules still govern added system complexity.
+  tasks:
+    - >-
+      Link implementation groups to scenarios, dependencies and completion evidence. Include their own tests and
+      docs; reserve the final group for integrated wave acceptance. Separate build, integration and release order.
+    - >-
+      Track ordinary tests, independent code review and fixes, user QA plan/execution/report, code re-review using
+      QA evidence, then independent spec/decision/document review and revalidation of next-wave prerequisites.
+    - >-
+      Keep archive as an untracked follow-up, not a checkbox required before archive. For a wave spanning changes,
+      link one shared acceptance report and identify which change coordinates closure instead of duplicating it.
+
+operations:
+  apply:
+    guidance:
+      - >-
+        Verify predecessor outcomes against actual code/build and evidence at their declared boundary:
+        implementation start, integration or release. Integration/release-only dependencies do not block
+        independent implementation earlier; genuinely dependent next-wave work still waits for wave acceptance.
+        Run ordinary tests and independent exact-diff code review; fix every confirmed finding and rerun checks.
+        Material fixes require a complete review of the updated diff, not only the previously flagged lines.
+      - >-
+        For user-facing functions, build a QA plan from the actual integrated diff and regression risks;
+        expected outcomes come from approved requirements. Exercise real user interactions, including the UI
+        when present, using the applicable QA tools. API preparation does not replace the UI under test.
+      - >-
+        Record plan/build revisions, cases, actual results, evidence and defects. A plan is not an executed test.
+        Justify non-applicability when there is no user interaction. Unavailable tools or environments are blockers.
+      - >-
+        Give the QA plan and execution report to the code reviewer even if all cases pass. Fix findings,
+        rerun affected tests and justified regression cases, and preserve earlier outcomes and revision history.
+      - >-
+        Then run independent spydell-spec-review, or an equivalent independent review, over current specs,
+        decisions, design, docs, roadmap and next-wave specs against the verified implementation and QA evidence.
+        Fix defects in code; update accepted changes at their source and all affected documents;
+        return new material choices to the user. Re-review until all findings are resolved.
+      - >-
+        Do not cap review rounds or treat deferral as a fix. Disputed findings stay open; refuted findings need
+        reviewer-verifiable evidence. Code or behavioral changes invalidate affected checks and require reruns.
+        A blocked mandatory check prevents wave closure and dependent next-wave implementation.
+        Independent research may continue. With no next wave, reconcile the final initiative documents.
+  archive:
+    guidance:
+      - >-
+        Before archiving, verify current evidence for ordinary tests, final independent code review,
+        required user QA, code re-review using its plan/report, and spec/decision/document reconciliation.
+        Check the shared wave acceptance report, revision coverage and dependent next-wave readiness.
+      - >-
+        Do not archive an incomplete wave based only on task counts or file presence. Confirmed findings must
+        be fixed and rechecked; refuted findings need evidence. Missing or blocked mandatory checks remain open.
+        Preserve history and canonical report links. Wave acceptance does not authorize production rollout.

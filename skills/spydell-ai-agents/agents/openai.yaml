@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spydell AI Agents"
+  short_description: "Анализ и проектирование ИИ-агентов"
+  default_prompt: "Используй $spydell-ai-agents, чтобы оценить целесообразность и спроектировать контуры ИИ-агента."
