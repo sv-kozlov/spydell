@@ -42,6 +42,7 @@
 - `evaluation-plan.md`, `evaluation-review.md` и `evaluation-results.md` — план, разбор методики и результаты проверки от `spydell-evaluator`;
 - `agent-assessment.md` и `agent-design.md` — решение и конструкция агентной автоматизации от `spydell-ai-agents`;
 - `system-model.md`, `transmission-chain.md` и `scenarios.md` — модель сложной системы, цепочка воздействия и сценарии от `spydell-systems`;
+- `triz.md` — противоречия, ресурсы, концепции и проверка предметных фактов от `spydell-triz`;
 - `decisions/NN-<decision>.md` — отдельное значимое решение, если решений много или работа продолжается несколько сессий.
 
 Не создавай пустые файлы ради симметрии.

@@ -34,7 +34,7 @@ codex plugin add spydell@spydell
 
 | Путь | Содержание |
 | --- | --- |
-| `skills/` | spydell, roadmap, spec-review, critic, evaluator, systems, ai-agents — с references и metadata |
+| `skills/` | spydell, roadmap, spec-review, critic, evaluator, systems, ai-agents, triz — с references и metadata |
 | `openspec/` | Схема `spydell` и образец проектной конфигурации |
 | `.claude-plugin/`, `.codex-plugin/` | Манифесты плагина и marketplace для Claude Code и Codex |
 | `install.py` | Подключение схемы к проекту OpenSpec; установка навыков без плагинов |
@@ -47,6 +47,7 @@ codex plugin add spydell@spydell
 Начать с идеи: «Используй spydell: разверни идею в концепцию, затем обсудим открытые аспекты».
 Продолжить планирование: «Используй spydell-roadmap для согласованных требований».
 Проверить срез: «Используй spydell-spec-review; проверь готовность к следующему шагу».
+Снять противоречие: «Используй spydell-triz: улучшаем X — ухудшается Y, компромисс не устраивает».
 
 Срез OpenSpec создаётся в настроенном проекте:
 

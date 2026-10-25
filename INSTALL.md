@@ -31,7 +31,7 @@ codex plugin add spydell@spydell
 npx skills@latest add sv-kozlov/spydell -g -a codex
 ```
 
-Или из клона репозитория: `python3 install.py` копирует семь навыков в `$CODEX_HOME/skills`
+Или из клона репозитория: `python3 install.py` копирует восемь навыков в `$CODEX_HOME/skills`
 (по умолчанию `~/.codex/skills`); другой каталог — `--skills-dir "/path/to/agent/skills"`.
 
 Устанавливайте навыки одним способом. Если раньше они копировались вручную

@@ -40,7 +40,7 @@ class InstallTests(unittest.TestCase):
         self.assertFalse(self.skills.exists())
         self.assertFalse(self.backups.exists())
         self.invoke()
-        self.assertEqual(len(list(self.skills.glob("*/SKILL.md"))), 7)
+        self.assertEqual(len(list(self.skills.glob("*/SKILL.md"))), 8)
         before = {p.relative_to(self.skills): p.read_bytes() for p in self.skills.rglob("*") if p.is_file()}
         result = self.invoke()
         self.assertIn("no changes", result.stdout)
