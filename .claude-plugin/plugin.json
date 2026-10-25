@@ -1,6 +1,6 @@
 {
   "name": "spydell",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Семья навыков Spydell: представление → прояснение аспектов → требования → roadmap → specs → design → задачи, с передачей в OpenSpec.",
   "author": {
     "name": "sv-kozlov",
@@ -8,6 +8,6 @@
   },
   "homepage": "https://github.com/sv-kozlov/spydell",
   "repository": "https://github.com/sv-kozlov/spydell",
-  "keywords": ["spydell", "requirements", "roadmap", "openspec", "sdd", "critic", "evaluation"],
+  "keywords": ["spydell", "requirements", "roadmap", "openspec", "sdd", "critic", "evaluation", "triz"],
   "skills": "./skills/"
 }
