@@ -87,6 +87,20 @@ class InstallTests(unittest.TestCase):
         self.invoke(*args)
         self.assertEqual(config.read_bytes(), before)
 
+    def test_upgrade_replaces_superseded_wording_in_order_and_keeps_user_rules(self):
+        example = yaml.safe_load((ROOT / "openspec/config.example.yaml").read_text(encoding="utf-8"))
+        superseded = yaml.safe_load((ROOT / "openspec/superseded.yaml").read_text(encoding="utf-8"))
+        current = example["operations"]["apply"]["guidance"]
+        user = "Project rule: Fix every confirmed finding and rerun checks for security fixes."
+        example["operations"]["apply"]["guidance"] = [superseded[0], *current[2:], user]
+        config = self.project / "openspec/config.yaml"
+        config.parent.mkdir()
+        config.write_text(yaml.safe_dump(example, width=80), encoding="utf-8")
+        result = self.invoke("--project", self.project, "--project-only")
+        self.assertIn("Superseded entry removed", result.stdout)
+        guidance = yaml.safe_load(config.read_text(encoding="utf-8"))["operations"]["apply"]["guidance"]
+        self.assertEqual(guidance, [*current, user])
+
     def test_invalid_config_does_not_partially_install(self):
         config = self.project / "openspec/config.yaml"
         config.parent.mkdir()

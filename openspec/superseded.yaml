@@ -1,0 +1,37 @@
+# Rule and guidance entries that earlier Spydell revisions installed and later ones replaced.
+# install.py drops a project config entry that equals one of them after whitespace normalization,
+# so reinstalling never leaves an outdated rule beside its replacement. When rewording or removing an entry
+# in config.example.yaml, append its previous text here.
+- 'Verify predecessor outcomes against actual code/build and evidence at their declared boundary: implementation
+  start, integration or release. Integration/release-only dependencies do not block independent implementation earlier;
+  genuinely dependent next-wave work still waits for wave acceptance. Run ordinary tests and independent exact-diff
+  code review; fix every confirmed finding and rerun checks. Material fixes require a complete review of the updated
+  diff, not only the previously flagged lines.'
+- Then run independent spydell-spec-review, or an equivalent independent review, over current specs, decisions,
+  design, docs, roadmap and next-wave specs against the verified implementation and QA evidence. Fix defects in
+  code; update accepted changes at their source and all affected documents; return new material choices to the user.
+  Re-review until all findings are resolved.
+- Do not cap review rounds or treat deferral as a fix. Disputed findings stay open; refuted findings need reviewer-verifiable
+  evidence. Code or behavioral changes invalidate affected checks and require reruns. A blocked mandatory check
+  prevents wave closure and dependent next-wave implementation. Independent research may continue. With no next
+  wave, reconcile the final initiative documents.
+- Before archiving, verify current evidence for ordinary tests, final independent code review, required user QA,
+  code re-review using its plan/report, and spec/decision/document reconciliation. Check the shared wave acceptance
+  report, revision coverage and dependent next-wave readiness.
+- Do not archive an incomplete wave based only on task counts or file presence. Confirmed findings must be fixed
+  and rechecked; refuted findings need evidence. Missing or blocked mandatory checks remain open. Preserve history
+  and canonical report links. Wave acceptance does not authorize production rollout.
+- 'Verify predecessor outcomes against actual code/build and evidence at their declared boundary: implementation
+  start, integration or release. Integration/release-only dependencies do not block independent implementation earlier;
+  genuinely dependent next-wave work still waits for wave acceptance. Run ordinary tests and independent exact-diff
+  code review on at least two axes: code standards (one reviewer per stack) and spec/contract compliance with a
+  requirement-scenario-test matrix. Reviewers read through git diff/show, never change the shared working copy and
+  test in a separate worktree. Fix every confirmed finding and rerun checks. Material fixes require a complete review
+  of the updated diff, not only the previously flagged lines.'
+- 'Verify predecessor outcomes against actual code/build and evidence at their declared boundary: implementation
+  start, integration or release. Integration/release-only dependencies do not block independent implementation earlier;
+  genuinely dependent next-wave work still waits for wave acceptance. Run ordinary tests and independent exact-diff
+  code review on at least two axes: code standards (one reviewer per stack) and spec/contract compliance with a
+  requirement-scenario-test matrix. Reviewers read through git diff/show, never change the shared working copy and
+  test in a separate worktree. Close confirmed findings as the gate policy requires and rerun checks. Material fixes
+  require a complete review of the updated diff, not only the previously flagged lines.'

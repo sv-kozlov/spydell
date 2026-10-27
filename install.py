@@ -13,17 +13,6 @@ import uuid
 
 ROOT = Path(__file__).resolve().parent
 
-# Wording that a later Spydell revision replaced, matched against entries already in a project config.
-# A matching entry is dropped when the incoming config no longer carries that wording, so reinstalling
-# never leaves the superseded rule beside the current one. Each marker must be absent from the new text.
-SUPERSEDED_MARKERS = (
-    "Fix every confirmed finding and rerun checks",
-    "Re-review until all findings are resolved",
-    "Do not cap review rounds or treat deferral as a fix",
-    "rechecked; refuted findings need evidence",
-    "reconciliation. Check the shared wave acceptance report",
-)
-
 
 def tree_hashes(path):
     """Return file hashes without accepting symbolic links."""
@@ -51,6 +40,8 @@ def merge_config(path):
         raise ValueError("Project setup needs PyYAML: python -m pip install -r requirements.txt") from error
     base = yaml.safe_load(path.read_text(encoding="utf-8")) if path.exists() else {}
     incoming = yaml.safe_load((ROOT / "openspec/config.example.yaml").read_text(encoding="utf-8"))
+    superseded = yaml.safe_load((ROOT / "openspec/superseded.yaml").read_text(encoding="utf-8"))
+    superseded = {normalize(item) for item in superseded}
     if base is None:
         base = {}
     if not isinstance(base, dict):
@@ -68,42 +59,39 @@ def merge_config(path):
         raise ValueError("Existing rules and operations must be mappings")
     dropped = []
     for name, additions in incoming["rules"].items():
-        dropped += [(f"rules.{name}", item) for item in merge_list(rules, name, additions)]
+        dropped += [(f"rules.{name}", item) for item in merge_list(rules, name, additions, superseded)]
     for name, additions in incoming["operations"].items():
         operation = operations.setdefault(name, {})
         if not isinstance(operation, dict):
             raise ValueError(f"Existing operation {name} must be a mapping")
         dropped += [
             (f"operations.{name}.guidance", item)
-            for item in merge_list(operation, "guidance", additions["guidance"])
+            for item in merge_list(operation, "guidance", additions["guidance"], superseded)
         ]
     for location, item in dropped:
-        print(f"Superseded entry removed from {location}: {' '.join(item.split())[:72]}...")
+        print(f"Superseded entry removed from {location}: {normalize(item)[:72]}...")
     return yaml.safe_dump(base, allow_unicode=True, sort_keys=False, width=110).encode("utf-8")
 
 
-def merge_list(mapping, key, additions):
-    """Append unique guidance, drop superseded wording and keep user-defined rules."""
+def merge_list(mapping, key, additions, superseded):
+    """Add missing guidance in Spydell order, drop earlier Spydell wording and keep user-defined rules."""
     values = mapping.setdefault(key, [])
     if not isinstance(values, list) or any(not isinstance(item, str) for item in values):
         raise ValueError(f"Existing {key} must be a list of strings")
-    dropped = [item for item in values if is_superseded(item, additions)]
-    for item in dropped:
-        values.remove(item)
-    values.extend(item for item in additions if item not in values)
+    dropped = [item for item in values if item not in additions and normalize(item) in superseded]
+    values[:] = [item for item in values if item not in dropped]
+    for index, item in enumerate(additions):
+        if item in values:
+            continue
+        # Insert before the next Spydell entry already present, so an upgrade keeps the order of a fresh install.
+        later = next((addition for addition in additions[index + 1:] if addition in values), None)
+        values.insert(values.index(later) if later else len(values), item)
     return dropped
 
 
-def is_superseded(item, additions):
-    """Report an existing entry whose wording the incoming config has replaced."""
-    if item in additions:
-        return False
-    text = " ".join(item.split())
-    current = [" ".join(addition.split()) for addition in additions]
-    return any(
-        marker in text and not any(marker in addition for addition in current)
-        for marker in SUPERSEDED_MARKERS
-    )
+def normalize(text):
+    """Collapse whitespace so YAML folding differences do not affect comparison."""
+    return " ".join(text.split())
 
 
 def remove_target(path):

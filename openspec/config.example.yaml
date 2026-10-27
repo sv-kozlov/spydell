@@ -60,8 +60,10 @@ operations:
       - >-
         Verify predecessor outcomes against actual code/build and evidence at their declared boundary:
         implementation start, integration or release. Integration/release-only dependencies do not block
-        independent implementation earlier; genuinely dependent next-wave work still waits for wave acceptance.
-        Run ordinary tests and independent exact-diff code review on at least two axes: code standards
+        independent implementation earlier; genuinely dependent next-wave work still waits for wave acceptance
+        unless the gate policy lets it start before manual gates, in which case it stays provisional and stops
+        on a failed or blocked case. Run ordinary tests and independent exact-diff code review on at least
+        two axes: code standards
         (one reviewer per stack) and spec/contract compliance with a requirement-scenario-test matrix.
         Reviewers read through git diff/show, never change the shared working copy and test in a separate worktree.
         Close confirmed findings as the gate policy requires and rerun checks.
