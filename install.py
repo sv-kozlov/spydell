@@ -13,6 +13,17 @@ import uuid
 
 ROOT = Path(__file__).resolve().parent
 
+# Wording that a later Spydell revision replaced, matched against entries already in a project config.
+# A matching entry is dropped when the incoming config no longer carries that wording, so reinstalling
+# never leaves the superseded rule beside the current one. Each marker must be absent from the new text.
+SUPERSEDED_MARKERS = (
+    "Fix every confirmed finding and rerun checks",
+    "Re-review until all findings are resolved",
+    "Do not cap review rounds or treat deferral as a fix",
+    "rechecked; refuted findings need evidence",
+    "reconciliation. Check the shared wave acceptance report",
+)
+
 
 def tree_hashes(path):
     """Return file hashes without accepting symbolic links."""
@@ -55,22 +66,44 @@ def merge_config(path):
     operations = base.setdefault("operations", {})
     if not isinstance(rules, dict) or not isinstance(operations, dict):
         raise ValueError("Existing rules and operations must be mappings")
+    dropped = []
     for name, additions in incoming["rules"].items():
-        merge_list(rules, name, additions)
+        dropped += [(f"rules.{name}", item) for item in merge_list(rules, name, additions)]
     for name, additions in incoming["operations"].items():
         operation = operations.setdefault(name, {})
         if not isinstance(operation, dict):
             raise ValueError(f"Existing operation {name} must be a mapping")
-        merge_list(operation, "guidance", additions["guidance"])
+        dropped += [
+            (f"operations.{name}.guidance", item)
+            for item in merge_list(operation, "guidance", additions["guidance"])
+        ]
+    for location, item in dropped:
+        print(f"Superseded entry removed from {location}: {' '.join(item.split())[:72]}...")
     return yaml.safe_dump(base, allow_unicode=True, sort_keys=False, width=110).encode("utf-8")
 
 
 def merge_list(mapping, key, additions):
-    """Append unique guidance without discarding user-defined rules."""
+    """Append unique guidance, drop superseded wording and keep user-defined rules."""
     values = mapping.setdefault(key, [])
     if not isinstance(values, list) or any(not isinstance(item, str) for item in values):
         raise ValueError(f"Existing {key} must be a list of strings")
+    dropped = [item for item in values if is_superseded(item, additions)]
+    for item in dropped:
+        values.remove(item)
     values.extend(item for item in additions if item not in values)
+    return dropped
+
+
+def is_superseded(item, additions):
+    """Report an existing entry whose wording the incoming config has replaced."""
+    if item in additions:
+        return False
+    text = " ".join(item.split())
+    current = [" ".join(addition.split()) for addition in additions]
+    return any(
+        marker in text and not any(marker in addition for addition in current)
+        for marker in SUPERSEDED_MARKERS
+    )
 
 
 def remove_target(path):
