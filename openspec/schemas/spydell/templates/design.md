@@ -12,9 +12,19 @@
 **Non-Goals:**
 <!-- What is explicitly out of scope -->
 
+## Existing Mechanisms
+
+<!-- First rung that fully works: not needed / already in the codebase / platform / installed dependency /
+     rule or setting. Anything new states why the rungs above did not fit. -->
+
+## Test Seams
+
+<!-- Where each spec behavior is verified. Prefer existing and highest seams; a new seam is agreed with the user before tasks. -->
+
 ## Decisions
 
-<!-- Key design decisions with rationale and alternatives considered -->
+<!-- Key design decisions with rationale and alternatives considered. Decisions crossing module boundaries
+     or contracts compare at least two structurally different candidates. -->
 
 ## Risks / Trade-offs
 

@@ -35,3 +35,6 @@
   requirement-scenario-test matrix. Reviewers read through git diff/show, never change the shared working copy and
   test in a separate worktree. Close confirmed findings as the gate policy requires and rerun checks. Material fixes
   require a complete review of the updated diff, not only the previously flagged lines.'
+- For user-facing functions, build a QA plan from the actual integrated diff and regression risks; expected outcomes
+  come from approved requirements. Exercise real user interactions, including the UI when present, using the
+  applicable QA tools. API preparation does not replace the UI under test.

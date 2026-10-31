@@ -1,7 +1,7 @@
 # Forked from @fission-ai/openspec 1.14.1 spec-driven; keep upstream delta-spec semantics.
 name: spydell
 version: 1
-description: Spydell slices - proposal → specs → design → tasks; wave acceptance is reviewed separately
+description: Spydell slices - proposal → specs → qa-plan → design → tasks; qa-plan does not block apply; wave acceptance is reviewed separately
 artifacts:
   - id: proposal
     generates: proposal.md
@@ -185,6 +185,35 @@ artifacts:
     requires:
       - proposal
 
+  - id: qa-plan
+    generates: acceptance/qa-plan.md
+    description: Draft user QA plan derived from the test strategy and spec scenarios
+    template: qa-plan.md
+    instruction: |
+      Draft the user QA plan right after the specs, before implementation.
+
+      If the change has no user interaction, write one line explaining why user QA does not apply and stop.
+      Scale to the change: a single-change slice with UI gets a short plan; a full-path wave gets a full plan.
+
+      Sources: the test strategy section of the initiative roadmap when it exists, and the spec scenarios.
+      Expected results come from the scenarios, never from the implementation.
+
+      Script first: a check that a test can express (unit, integration, API, e2e) belongs in tasks as a test,
+      not in this plan. Keep here only what a script cannot check - visual and UX judgement, real device or
+      browser behavior, exploratory sessions - or where a one-off script costs more than it is worth.
+
+      Each case: ID, role, preconditions, exact actions, expected result, how it is observed, linked scenario,
+      executor (agent or human). Cases with irreversible actions or visual judgement go to a human.
+      For risky UI add at most one exploratory session: what to look for and a timebox.
+
+      Test data: refer to test accounts, seeds and the environment file by name only. Never put secrets,
+      tokens or passwords in the plan. Production services are touched only by a human, with permission.
+
+      After implementation this plan is extended with regression cases from the actual diff;
+      executed results go to a separate report. A plan is not an executed test.
+    requires:
+      - specs
+
   - id: design
     generates: design.md
     description: Technical design document with implementation details
@@ -201,8 +230,14 @@ artifacts:
       for motivation instead of restating it (e.g., "See proposal.md - Why").
       - **Goals / Non-Goals**: What this design achieves and explicitly excludes. Don't restate the proposal's
       scope - add only design-level boundaries.
+      - **Existing Mechanisms**: Before deciding anything new, take the first rung that fully works: is it needed
+      at all; already in this codebase; a platform or standard-library feature; an installed dependency; a rule or
+      setting instead of code. New code or a new dependency states why each rung above did not fit.
+      - **Test Seams**: Where each spec behavior is verified. Prefer existing seams and the highest one possible;
+      the fewer seams the better. A new seam is agreed with the user before tasks.
       - **Decisions**: Key technical choices with rationale (why X over Y?). Include alternatives considered for
-      each decision.
+      each decision. A decision that crosses module boundaries or contracts compares at least two structurally
+      different candidates; a deliberately weak alternative does not count.
       - **Risks / Trade-offs**: Known limitations, things that could go wrong. Format: [Risk] → Mitigation
       - **Migration Plan**: Steps to deploy, rollback strategy (if applicable)
       - **Open Questions**: Unknowns that can safely be answered later without
@@ -249,6 +284,11 @@ artifacts:
         this change to be archived, preserve those steps as plain bullets in an
         optional `## Workflow follow-up` section at the end of tasks.md. These
         bullets are reference information outside tracked task progress.
+      - Write a check as a test at the seam named in design.md whenever a test can express it;
+        leave to the QA plan only what a script cannot check.
+      - A deliberate shortcut with a known limit gets a code comment `shortcut: <limit>, <when to revisit>`
+        and a row in the initiative map's accepted simplifications; a shortcut with no revisit trigger is
+        not accepted.
       - Each task MUST state how to verify completion (a test, command,
         observable behavior, or delivered artifact). Put the verification in
         that task's checkbox description. Use a separate verification task only

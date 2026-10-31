@@ -10,6 +10,7 @@ context: |
   Read the source paths and revisions in the proposal. Keep one canonical source for each decision and requirement.
   A small, already clear change needs no artificial initiative package; record its request and acceptance directly.
   Follow repository AGENTS.md and the applicable implementation, review and QA skills.
+  When CONSTRAINTS.md exists it is the project's engineering bar: designs and tasks respect it and never lower it silently.
   File existence, completed task boxes and OpenSpec validation do not establish wave acceptance.
   Dependent next-wave specs remain provisional until predecessor implementation and evidence are reviewed.
 
@@ -69,8 +70,8 @@ operations:
         Close confirmed findings as the gate policy requires and rerun checks.
         Material fixes require a complete review of the updated diff, not only the previously flagged lines.
       - >-
-        For user-facing functions, build a QA plan from the actual integrated diff and regression risks;
-        expected outcomes come from approved requirements. Exercise real user interactions, including the UI
+        For user-facing functions, extend the QA plan drafted from the specs (acceptance/qa-plan.md) with
+        regression cases from the actual integrated diff; expected outcomes come from approved requirements. Exercise real user interactions, including the UI
         when present, using the applicable QA tools. API preparation does not replace the UI under test.
       - >-
         Record plan/build revisions, cases, actual results, evidence and defects. A plan is not an executed test.

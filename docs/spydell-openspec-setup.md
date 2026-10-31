@@ -9,11 +9,20 @@
 - [schema.yaml](../openspec/schemas/spydell/schema.yaml): проектная схема `spydell`.
 - [proposal](../openspec/schemas/spydell/templates/proposal.md): источники, срез и предпосылки.
 - [spec](../openspec/schemas/spydell/templates/spec.md): проверяемое поведение и трассировка.
-- [design](../openspec/schemas/spydell/templates/design.md): механизм после specs и условия интеграции.
-- [tasks](../openspec/schemas/spydell/templates/tasks.md): реализация и свидетельства завершения волны.
+- [qa-plan](../openspec/schemas/spydell/templates/qa-plan.md): черновик пользовательского QA из specs
+  и стратегии тестирования, позже — регрессия по diff.
+- [design](../openspec/schemas/spydell/templates/design.md): существующие механизмы, тестовые швы,
+  решения с кандидатами и условия интеграции.
+- [tasks](../openspec/schemas/spydell/templates/tasks.md): реализация, тесты на швах, пометки `shortcut:`
+  и свидетельства завершения волны.
 
 Схема получена из `spec-driven` пакета `@fission-ai/openspec` 1.14.1 через `openspec schema fork`.
 Основные изменения — зависимость design от specs, полный список apply.requires и дополнения шаблонов.
+Артефакт `qa-plan` (`acceptance/qa-plan.md`) зависит только от specs и не входит в apply.requires:
+он появляется отдельным пунктом status и не блокирует реализацию. Изменение без UI получает в нём одну строку
+о неприменимости QA. В design перед решениями описываются существующие механизмы и тестовые швы,
+а решение на границе модулей или контрактов сравнивает не меньше двух разных кандидатов.
+Конфиг ссылается на `CONSTRAINTS.md` как на инженерную планку проекта, если файл есть.
 Сохранены upstream-правила delta-specs, включая полные MODIFIED-блоки и проверяемые задачи.
 Для соблюдения лимита строк длинные инструкции перенесены без изменения смысла.
 
@@ -42,7 +51,7 @@ openspec status --change <change-name> --json
 ## Завершение волны
 
 В задачах фиксируются обычные тесты и независимое ревью точного diff, устранение замечаний,
-пользовательский QA с планом по diff и ожидаемыми результатами по требованиям,
+пользовательский QA по плану из specs, дополненному регрессией по diff, с ожидаемыми результатами по требованиям,
 выполненный прогон и отчёт, повторное ревью кода по этим материалам.
 После этого проверяются и согласуются specs, решения, design, документы и предпосылки следующей волны.
 При правках повторяются затронутые проверки; существенные изменения кода требуют полного повторного review.
@@ -73,6 +82,8 @@ openspec status --change <change-name> --json
 | Удаление proposal/spec/design/tasks по одному | Apply каждый раз заблокирован |
 | Change без metadata | Схема остаётся spec-driven |
 | Явное skip_specs для отсутствующего behavior delta | Specs пропускаются штатным механизмом |
+| `qa-plan` на 1.16.0 | Отдельный пункт status после specs; `instructions qa-plan` отдаёт `acceptance/qa-plan.md` и шаблон |
+| Apply без `qa-plan` | `instructions apply` — состояние `ready`; `validate --strict` проходит |
 
 Для повторной проверки структуры:
 

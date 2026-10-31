@@ -19,7 +19,7 @@
      Individual change completion does not close the wave before the integrated checks succeed. -->
 
 - [ ] 3.1 Run integrated checks and independent code review; fix findings and record the verified revision.
-- [ ] 3.2 Derive user QA cases from the actual diff and accepted behavior; save the plan or justify non-applicability.
+- [ ] 3.2 Extend acceptance/qa-plan.md with regression cases from the actual diff, or keep its non-applicability line.
 - [ ] 3.3 Execute required user interactions; save case results, build/plan revisions, evidence and defects.
 - [ ] 3.4 Re-review code with the QA plan/report; fix findings and rerun affected checks until resolved.
 - [ ] 3.5 Independently review specs, decisions, docs and next-wave prerequisites against the verified implementation.
