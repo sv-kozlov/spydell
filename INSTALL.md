@@ -38,10 +38,18 @@ npx skills@latest add sv-kozlov/spydell -g -a codex
 (например, в `~/.codex/skills/spydell*`), удалите старые копии, чтобы одноимённые навыки не загружались дважды.
 Если текущая сессия не видит новые навыки, откройте новую.
 
-## 2. Навыки Matt Pocock
+## 2. Навыки других наборов
 
-Spydell использует `grilling`, `grill-me`, `wayfinder`, `research`, `handoff`, `domain-modeling`,
-`prototype` и `code-review`. Они ставятся из marketplace Matt:
+Обязательны навыки Matt (этот раздел) и OpenSpec (раздел 3). Ponytail и инженерная планка — по желанию:
+без них Spydell идёт запасным путём.
+
+Если у вас установлен superpowers, его `brainstorming` и `writing-plans` при работе по Spydell не запускаются:
+замысел, требования и план ведёт Spydell. Удалять superpowers не нужно.
+
+### Matt Pocock (обязательно)
+
+Spydell использует `grilling`, `research`, `domain-modeling`, `prototype`, `tdd`, `diagnosing-bugs`
+и `code-review`; по условиям — `wayfinder` и `handoff`. Они ставятся из marketplace Matt:
 
 ```bash
 claude plugin marketplace add mattpocock/skills
@@ -61,11 +69,43 @@ codex plugin add mattpocock-skills@mattpocock
 `wayfinder`, `to-spec`, `to-tickets`, `grill-me`, `handoff` и ряд других помечены
 `disable-model-invocation`: агент не может вызвать их сам. Когда процессу нужен Wayfinder,
 Spydell готовит передачу и просит пользователя запустить `/wayfinder` (Claude Code)
-или `$wayfinder` (Codex). `grilling`, `research`, `domain-modeling`, `prototype` и `code-review`
-агент вызывает сам.
+или `$wayfinder` (Codex). `grilling`, `research`, `domain-modeling`, `prototype`, `tdd`,
+`diagnosing-bugs` и `code-review` агент вызывает сам.
 Затем выполните `setup-matt-pocock-skills` в проекте для выбора tracker и размещения документов;
 при использовании Spydell согласуйте его с существующими каноническими документами, не создавайте дубли.
 Matt обновляется отдельно; после обновления сверяйте границы grilling, хранения решений и review.
+
+### Ponytail (по желанию)
+
+Наименьшее полное изменение при реализации, ревью качества кода в приёмке волны (`ponytail-review`
+вместо `code-review`) и реестр осознанных упрощений (`ponytail-debt`):
+
+```bash
+claude plugin marketplace add DietrichGebert/ponytail
+claude plugin install ponytail@ponytail
+```
+
+```bash
+codex plugin marketplace add DietrichGebert/ponytail
+codex plugin add ponytail@ponytail
+```
+
+В Codex после установки откройте `/hooks`, доверьте два хука ponytail и начните новый тред.
+Ponytail работает всю сессию; `/ponytail off` выключает его, `/ponytail band` скрывает панель в Claude Code.
+
+### Инженерная планка (по желанию)
+
+Навык `constraint-driven-development` из набора Addy Osmani проводит интервью о планке качества проекта,
+записывает её в `CONSTRAINTS.md` и следит, чтобы агент её не понижал. Без него Spydell записывает
+короткую планку в тот же файл сам. Ставьте только этот навык, не весь набор: остальные навыки Osmani
+(`spec-driven-development`, `planning-and-task-breakdown`, `idea-refine`, `interview-me`) запускаются сами
+и перехватывают работу Spydell и `grilling`.
+
+```bash
+npx skills@latest add addyosmani/agent-skills -g -s constraint-driven-development -a claude-code codex
+```
+
+Агенты в `-a` перечисляются через пробел.
 
 ## 3. OpenSpec CLI
 
@@ -216,6 +256,8 @@ Context, rules и guidance объединяются по точному совп
 ```
 
 После обновления OpenSpec CLI перегенерируйте его навыки тем же способом, каким они ставились (раздел 4).
+Ponytail обновляется как плагин (`claude plugin update ponytail@ponytail`),
+`constraint-driven-development` — командой `npx skills@latest update constraint-driven-development -g`.
 
 Перезаписываются только выбранные каталоги и config. Все существовавшие изменяемые targets сохраняются
 в `~/.spydell-backups/<id>/`; путь выводится после установки. Можно задать `--backup-dir`.
