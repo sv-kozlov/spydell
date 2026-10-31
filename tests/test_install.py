@@ -101,6 +101,26 @@ class InstallTests(unittest.TestCase):
         guidance = yaml.safe_load(config.read_text(encoding="utf-8"))["operations"]["apply"]["guidance"]
         self.assertEqual(guidance, [*current, user])
 
+    def test_user_schema_installs_once_and_project_gets_config_only(self):
+        schemas = self.base / "user-schemas"
+        args = ("--user-schema", "--schema-dir", schemas, "--project", self.project, "--project-only")
+        self.invoke(*args)
+        self.assertEqual((schemas / "spydell/schema.yaml").read_bytes(),
+                         (ROOT / "openspec/schemas/spydell/schema.yaml").read_bytes())
+        self.assertFalse((self.project / "openspec/schemas").exists())
+        config = yaml.safe_load((self.project / "openspec/config.yaml").read_text())
+        self.assertIn("rules", config)
+        self.assertFalse(self.skills.exists())
+        self.assertIn("no changes", self.invoke(*args).stdout)
+
+    def test_user_schema_link_to_clone_is_left_alone(self):
+        schemas = self.base / "user-schemas"
+        schemas.mkdir()
+        (schemas / "spydell").symlink_to(ROOT / "openspec/schemas/spydell")
+        result = self.invoke("--user-schema", "--schema-dir", schemas, "--project-only")
+        self.assertIn("linked to this clone", result.stdout)
+        self.assertTrue((schemas / "spydell").is_symlink())
+
     def test_invalid_config_does_not_partially_install(self):
         config = self.project / "openspec/config.yaml"
         config.parent.mkdir()
