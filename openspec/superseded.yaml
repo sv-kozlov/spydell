@@ -1,5 +1,5 @@
-# Rule and guidance entries that earlier Spydell revisions installed and later ones replaced.
-# install.py drops a project config entry that equals one of them after whitespace normalization,
+# Rule, guidance and context entries that earlier Spydell revisions installed and later ones replaced.
+# install.py drops a project config entry or context paragraph that equals one of them after whitespace normalization,
 # so reinstalling never leaves an outdated rule beside its replacement. When rewording or removing an entry
 # in config.example.yaml, append its previous text here.
 - 'Verify predecessor outcomes against actual code/build and evidence at their declared boundary: implementation
@@ -40,3 +40,24 @@
   applicable QA tools. API preparation does not replace the UI under test.
 - Check existing capabilities and active changes for conflicting or overlapping requirements and delta bases.
   Return unresolved material product choices to grilling; never normalize a code defect into a requirement.
+- |-
+  This project follows Spydell from concept, through clarification and requirements, to roadmap and OpenSpec.
+  Use spydell explicitly for new Spydell slices. Do not migrate existing changes implicitly.
+  Clarify material choices at the current level using grilling; investigate facts independently.
+  Reuse accepted decisions. A concept can remain a draft with open questions; technical choices follow requirements.
+  Read the source paths and revisions in the proposal. Keep one canonical source for each decision and requirement.
+  A small, already clear change needs no artificial initiative package; record its request and acceptance directly.
+  Follow repository AGENTS.md and the applicable implementation, review and QA skills.
+  File existence, completed task boxes and OpenSpec validation do not establish wave acceptance.
+  Dependent next-wave specs remain provisional until predecessor implementation and evidence are reviewed.
+- |-
+  This project follows Spydell from concept, through clarification and requirements, to roadmap and OpenSpec.
+  Use spydell explicitly for new Spydell slices. Do not migrate existing changes implicitly.
+  Clarify material choices at the current level using grilling; investigate facts independently.
+  Reuse accepted decisions. A concept can remain a draft with open questions; technical choices follow requirements.
+  Read the source paths and revisions in the proposal. Keep one canonical source for each decision and requirement.
+  A small, already clear change needs no artificial initiative package; record its request and acceptance directly.
+  Follow repository AGENTS.md and the applicable implementation, review and QA skills.
+  When CONSTRAINTS.md exists it is the project's engineering bar: designs and tasks respect it and never lower it silently.
+  File existence, completed task boxes and OpenSpec validation do not establish wave acceptance.
+  Dependent next-wave specs remain provisional until predecessor implementation and evidence are reviewed.

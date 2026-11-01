@@ -51,13 +51,18 @@ def merge_config(path):
     if not isinstance(context, str):
         raise ValueError("Existing context must be a string")
     addition = incoming["context"].strip()
+    # Spydell context is one paragraph appended after a blank line, so an earlier wording is a whole paragraph.
+    parts = context.split("\n\n")
+    stale = [part for part in parts if part.strip() != addition and normalize(part) in superseded]
+    dropped = [("context", part) for part in stale]
+    context = "\n\n".join(part for part in parts if part not in stale)
     if addition not in context:
-        base["context"] = "\n\n".join(part for part in [context.strip(), addition] if part) + "\n"
+        context = "\n\n".join(part for part in [context.strip(), addition] if part) + "\n"
+    base["context"] = context
     rules = base.setdefault("rules", {})
     operations = base.setdefault("operations", {})
     if not isinstance(rules, dict) or not isinstance(operations, dict):
         raise ValueError("Existing rules and operations must be mappings")
-    dropped = []
     for name, additions in incoming["rules"].items():
         dropped += [(f"rules.{name}", item) for item in merge_list(rules, name, additions, superseded)]
     for name, additions in incoming["operations"].items():

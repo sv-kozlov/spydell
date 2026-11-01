@@ -5,7 +5,7 @@ schema: spec-driven
 context: |
   This project follows Spydell from concept, through clarification and requirements, to roadmap and OpenSpec.
   Use spydell explicitly for new Spydell slices. Do not migrate existing changes implicitly.
-  Clarify material choices at the current level using grilling; investigate facts independently.
+  Clarify material choices at the current level using spydell-grilling; investigate facts independently.
   Reuse accepted decisions. A concept can remain a draft with open questions; technical choices follow requirements.
   Read the source paths and revisions in the proposal. Keep one canonical source for each decision and requirement.
   A small, already clear change needs no artificial initiative package; record its request and acceptance directly.

@@ -102,6 +102,18 @@ class InstallTests(unittest.TestCase):
         guidance = yaml.safe_load(config.read_text(encoding="utf-8"))["operations"]["apply"]["guidance"]
         self.assertEqual(guidance, [*current, user])
 
+    def test_upgrade_replaces_superseded_context_and_keeps_user_context(self):
+        example = yaml.safe_load((ROOT / "openspec/config.example.yaml").read_text(encoding="utf-8"))
+        superseded = yaml.safe_load((ROOT / "openspec/superseded.yaml").read_text(encoding="utf-8"))
+        old = superseded[-1]
+        config = self.project / "openspec/config.yaml"
+        config.parent.mkdir()
+        config.write_text(yaml.safe_dump({"context": f"User product context\n\n{old}\n"}, width=80), encoding="utf-8")
+        result = self.invoke("--project", self.project, "--project-only")
+        self.assertIn("Superseded entry removed from context", result.stdout)
+        context = yaml.safe_load(config.read_text(encoding="utf-8"))["context"]
+        self.assertEqual(context, f"User product context\n\n{example['context'].strip()}\n")
+
     def test_user_schema_installs_once_and_project_gets_config_only(self):
         schemas = self.base / "user-schemas"
         args = ("--user-schema", "--schema-dir", schemas, "--project", self.project, "--project-only")
