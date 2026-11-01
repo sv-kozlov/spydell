@@ -344,6 +344,7 @@ codex plugin add spydell@spydell
 | `skills/` | spydell, grilling, roadmap, spec-review, qa, unslop, retro, critic, evaluator, systems, ai-agents, triz — с references и metadata; `spydell/scripts/check.py` — проверки на воротах; `spydell/scripts/watch.py` — наблюдатель автономного прогона; `spydell/scripts/dashboard.py`, `spydell/assets/dashboard.html` и `dashboard-data.md` — дашборд и формат его данных |
 | `openspec/` | Схемы `spydell` и `spydell-design` и образец проектной конфигурации |
 | `.claude-plugin/`, `.codex-plugin/` | Манифесты плагина и marketplace для Claude Code и Codex |
+| `evals/` | Eval маршрутизации: запрос → ожидаемый навык, прогон через любую модель с OpenAI-совместимым API (по умолчанию бесплатные модели OpenRouter); в CI — при заданном секрете `OPENROUTER_API_KEY` |
 | `install.py` | Подключение схем к OpenSpec — в проект или на уровень пользователя; установка навыков без плагинов |
 | `docs/` | Чем схема отличается от `spec-driven`, завершение волны, границы автоматизации |
 | `licenses/` | Лицензии OpenSpec (схема и шаблоны) и pstack (`spydell-unslop`) |
@@ -378,6 +379,9 @@ Default существующего проекта сохраняется. Зав
 - Автономный прогон на несколько волн: ведущий прогона открывает ведущего каждой волны новой сессией — связанной
   сессией Claude Desktop или через `claude -p`; Codex подключается через `codex exec`. В контракте появилось поле
   «Разрешения» для сессий без интерфейса, а в `usage.md` — раздел «Запуск сессий» с проверенными флагами CLI.
+- Eval маршрутизации и CI: `evals/run_routing.py` проверяет, что на типичные запросы срабатывает нужный навык
+  Spydell, а не соседний (superpowers, OpenSpec, Matt), с блоком AGENTS.md проекта; GitHub Actions гоняет unittest
+  и, при заданном секрете, eval на бесплатных моделях OpenRouter.
 - Исполнители по компетенции: шаг называет нужную компетенцию, исполнителя ведущий находит во время работы в навыках
   проекта и каталогах установленных наборов, например startup-team, иначе работает общий агент; имён чужих ролей
   в текстах нет, поэтому переработка соседнего набора Spydell не задевает.

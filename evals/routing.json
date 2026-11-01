@@ -1,0 +1,29 @@
+{
+  "about": "Routing eval: given skill descriptions, project rules and a request, the model names the skill that should handle it, or none. Competitor descriptions are short paraphrases of neighbouring sets that trigger on the same requests.",
+  "project_rules": "skills/spydell/assets/agents-block.md",
+  "competitors": {
+    "brainstorming": "Use before any creative work - creating features, building components, adding functionality or modifying behavior. Explores intent, requirements and design before implementation.",
+    "writing-plans": "Use when you have a spec or requirements for a multi-step task, before touching code.",
+    "openspec-new-change": "Start a new OpenSpec change for a feature, fix or modification with a step-by-step artifact workflow.",
+    "write-spec": "Write a feature spec or PRD from a problem statement or feature idea.",
+    "grilling": "Grill the user relentlessly about a plan, decision or idea to stress-test their thinking.",
+    "code-review": "Review the current diff for correctness bugs at a given effort level."
+  },
+  "cases": [
+    {"prompt": "Есть идея сервиса записи к врачу для небольших клиник, помоги продумать замысел.", "expect": "spydell"},
+    {"prompt": "Добавь в приложение экспорт отчётов в PDF — сначала нужна спека.", "expect": "spydell"},
+    {"prompt": "Разнеси наш RFC о переходе на Kafka: где он развалится?", "expect": "spydell-critic"},
+    {"prompt": "Разбей согласованные требования на срезы и волны с зависимостями.", "expect": "spydell-roadmap"},
+    {"prompt": "Проверь specs и roadmap на согласованность перед реализацией второй волны.", "expect": "spydell-spec-review"},
+    {"prompt": "Составь тест-кейсы для пользовательского тестирования волны 2 и прогони их по сборке.", "expect": "spydell-qa"},
+    {"prompt": "Почисти этот отчёт для заказчика от канцелярита и машинного стиля.", "expect": "spydell-unslop"},
+    {"prompt": "Волна закончилась, я дважды поправлял агента — разбери уроки.", "expect": "spydell-retro"},
+    {"prompt": "Нужен ли нам ИИ-агент для разбора входящих заявок или хватит правил и скрипта?", "expect": "spydell-ai-agents"},
+    {"prompt": "Как доказательно оценить, что новый процесс обработки заявок эффективнее старого? Нужен план оценки.", "expect": "spydell-evaluator"},
+    {"prompt": "Улучшаем скорость — падает надёжность, компромисс не устраивает. Разбери по ТРИЗ.", "expect": "spydell-triz"},
+    {"prompt": "Сделай системную карту цепочки передачи воздействий в нашей логистике и найди каскадные риски.", "expect": "spydell-systems"},
+    {"prompt": "Опроси меня по замыслу: остались существенные развилки по требованиям.", "expect": "spydell-grilling"},
+    {"prompt": "Поправь опечатку в README.", "expect": "none"},
+    {"prompt": "Почини падающий тест в utils/date_test.py.", "expect": "none"}
+  ]
+}

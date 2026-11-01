@@ -35,6 +35,13 @@
 python3 -m unittest discover -s tests
 ```
 
+Правка описания навыка, маршрута или блока `skills/spydell/assets/agents-block.md` — ещё eval маршрутизации
+на бесплатных моделях OpenRouter; новый навык получает в `evals/routing.json` хотя бы один случай:
+
+```bash
+python3 evals/run_routing.py
+```
+
 ## Коммиты
 
 Сообщение на русском, одна фраза о сути изменения; выпуск начинается с `Spydell <версия>:`.
