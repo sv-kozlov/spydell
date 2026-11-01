@@ -107,6 +107,12 @@ npx skills@latest add addyosmani/agent-skills -g -s constraint-driven-developmen
 
 Агенты в `-a` перечисляются через пробел.
 
+### GitHub CLI для ретро (по желанию)
+
+`spydell-retro` после волны оформляет отобранные уроки о самих навыках как issue в `sv-kozlov/spydell` через `gh`. Нужны установленный
+`gh` и вход с доступом к репозиторию (`gh auth login`). Каждое issue агент сначала показывает вам и отправляет
+только после согласия. Без `gh` тексты issue остаются в `spydell-lessons.md` проекта, и агент даёт команду для их создания.
+
 ## 3. OpenSpec CLI
 
 Нужен Node.js с npm. Схема проверена с Node.js 26.7.0 и OpenSpec 1.16.0 (ранее — 1.14.3):

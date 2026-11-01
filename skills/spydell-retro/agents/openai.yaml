@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spydell Retro"
+  short_description: "Уроки: улучшения проекта, кандидаты и редкие issue для Spydell, новые навыки проекта"
+  default_prompt: "Используй $spydell-retro, чтобы разобрать прошедшую сессию и предложить улучшения проекта, навыков Spydell и новые навыки проекта."
