@@ -10,6 +10,10 @@
 - Навык `spydell-unslop` — адаптация навыка `unslop` из pstack (Lauren Tan, 2026): номера правил сохранены,
   текст переработан под русский язык и дополнен. Оригинальная MIT-лицензия сохранена в
   [licenses/pstack-MIT.txt](licenses/pstack-MIT.txt).
+- Лестница достаточности ([skills/spydell/references/method.md](skills/spydell/references/method.md)) и формат
+  пометки `shortcut:` адаптированы из правил ponytail (DietrichGebert, 2026) «The smallest complete change»:
+  ступени перенесены на уровень замысла, требований и процесса и переписаны по-русски. Оригинальная MIT-лицензия
+  сохранена в [licenses/ponytail-MIT.txt](licenses/ponytail-MIT.txt).
 - Правила режима упрощённого технического языка в `spydell-unslop` написаны своими словами по мотивам
   ASD-STE100 и ГОСТ Р 58049-2017; тексты этих стандартов и словарь STE не воспроизводятся.
 - Навыки Matt Pocock, OpenSpec CLI и PyYAML не включены; их устанавливают из исходных источников.
