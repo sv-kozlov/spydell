@@ -83,6 +83,7 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(existing.read_text(), "existing proposal")
         self.assertFalse(self.skills.exists())
         self.assertTrue((self.project / "openspec/schemas/spydell/schema.yaml").is_file())
+        self.assertTrue((self.project / "openspec/schemas/spydell-design/schema.yaml").is_file())
         before = config.read_bytes()
         self.invoke(*args)
         self.assertEqual(config.read_bytes(), before)
@@ -105,8 +106,9 @@ class InstallTests(unittest.TestCase):
         schemas = self.base / "user-schemas"
         args = ("--user-schema", "--schema-dir", schemas, "--project", self.project, "--project-only")
         self.invoke(*args)
-        self.assertEqual((schemas / "spydell/schema.yaml").read_bytes(),
-                         (ROOT / "openspec/schemas/spydell/schema.yaml").read_bytes())
+        for name in ("spydell", "spydell-design"):
+            self.assertEqual((schemas / name / "schema.yaml").read_bytes(),
+                             (ROOT / "openspec/schemas" / name / "schema.yaml").read_bytes())
         self.assertFalse((self.project / "openspec/schemas").exists())
         config = yaml.safe_load((self.project / "openspec/config.yaml").read_text())
         self.assertIn("rules", config)
@@ -120,6 +122,7 @@ class InstallTests(unittest.TestCase):
         result = self.invoke("--user-schema", "--schema-dir", schemas, "--project-only")
         self.assertIn("linked to this clone", result.stdout)
         self.assertTrue((schemas / "spydell").is_symlink())
+        self.assertTrue((schemas / "spydell-design/schema.yaml").is_file())
 
     def test_invalid_config_does_not_partially_install(self):
         config = self.project / "openspec/config.yaml"

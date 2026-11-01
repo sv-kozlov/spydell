@@ -164,7 +164,10 @@ openspec config set workflows '["propose","explore","new","continue","apply","up
   Удаление прежних `openspec-*` нужно, чтобы не остался навык, исчезнувший из новой версии.
   Варианты для Claude и Codex отличаются только подсказками вызова следующего шага.
 
-### Схема и config
+### Схемы и config
+
+Spydell ставит две схемы: `spydell` — срезы с поведением (proposal → specs → qa-plan → design → tasks)
+и `spydell-design` — дизайн-change уровня В (proposal → задачи дизайна с контрольными точками, без specs).
 
 Из клона Spydell (нужен Python 3.10+ и PyYAML):
 
@@ -175,10 +178,10 @@ python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 ```
 
-Схему держите тоже в одном месте — выберите вариант.
+Схемы держите тоже в одном месте — выберите вариант.
 
 **Один раз на уровне пользователя** (удобно для нескольких проектов на одной машине):
-схема ставится в каталог схем пользователя OpenSpec (`$XDG_DATA_HOME/openspec/schemas`,
+обе схемы ставятся в каталог схем пользователя OpenSpec (`$XDG_DATA_HOME/openspec/schemas`,
 по умолчанию `~/.local/share/openspec/schemas`, в Windows — `%LOCALAPPDATA%\openspec\schemas`),
 а в проект пишется только config:
 
@@ -187,13 +190,14 @@ python3 -m venv .venv
 .venv/bin/python install.py --user-schema --project "/path/to/project" --project-only
 ```
 
-Для следующих проектов схема уже стоит; повторный запуск только объединяет их config.
-Если в проекте осталась копия `openspec/schemas/spydell`, она перекрывает общую — удалите её.
+Для следующих проектов схемы уже стоят; повторный запуск только объединяет их config.
+Если в проекте осталась копия `openspec/schemas/spydell` или `spydell-design`, она перекрывает общую — удалите её.
 Разработчик Spydell может вместо копии сослаться на клон, чтобы правки действовали сразу;
 установщик такую ссылку не трогает:
 
 ```bash
 ln -s "$PWD/openspec/schemas/spydell" ~/.local/share/openspec/schemas/spydell
+ln -s "$PWD/openspec/schemas/spydell-design" ~/.local/share/openspec/schemas/spydell-design
 ```
 
 **В каждом проекте** (когда репозиторий должен быть самодостаточным — команда, CI):
@@ -204,7 +208,7 @@ ln -s "$PWD/openspec/schemas/spydell" ~/.local/share/openspec/schemas/spydell
 ```
 
 В Windows используйте `.venv\Scripts\python.exe`.
-Установщик ставит `openspec/schemas/spydell` (в проект или на уровень пользователя)
+Установщик ставит `openspec/schemas/spydell` и `openspec/schemas/spydell-design` (в проект или на уровень пользователя)
 и добавляет context/rules/operations в config проекта.
 Существующие schema, store, references, дополнительные ключи и правила сохраняются.
 Контекст Spydell добавляется к имеющемуся, повторная установка не дублирует его и списки правил.
@@ -217,13 +221,14 @@ ln -s "$PWD/openspec/schemas/spydell" ~/.local/share/openspec/schemas/spydell
 
 ```bash
 openspec schema validate spydell --json
+openspec schema validate spydell-design --json
 openspec schema which spydell --json
 openspec new change <change-name> --schema spydell
 ```
 
 `schema which` показывает источник: `user` или `project`.
 Последняя команда создаёт реальный change: выполните её только для выбранной инициативы.
-Схема не назначается default автоматически; используйте явный `--schema spydell`.
+Схемы не назначаются default автоматически; используйте явный `--schema spydell` или `--schema spydell-design`.
 
 ## 5. Обновить
 

@@ -80,6 +80,9 @@ artifacts:
       Quick test: if the implementation can change without changing externally
       visible behavior, it likely does not belong in the spec.
 
+      For user interface behavior, reference the approved mockups, DESIGN.md and the
+      project's UI spec by path instead of copying visual details into requirements.
+
       Create one spec file per capability listed in the proposal's Capabilities section.
       `<capability-path>` is the spec directory relative to `specs/` (for example,
       `user-auth` or `identity/user-auth`). Preserve the full path:
@@ -247,6 +250,7 @@ artifacts:
       skipped. If a question would change the specs, the chosen approach, or
       the task breakdown, resolve it now - ask the user instead of guessing.
 
+      Visual decisions do not belong here: reference DESIGN.md and the approved mockups.
       Focus on architecture and approach, not line-by-line implementation.
       The proposal covers why and what; design covers how. Reference the
       proposal for motivation and, once written, the specs for requirements -

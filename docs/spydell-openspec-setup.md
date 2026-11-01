@@ -7,6 +7,8 @@
 
 - [config.yaml](../openspec/config.example.yaml): контекст, правила артефактов, инструкции apply/archive.
 - [schema.yaml](../openspec/schemas/spydell/schema.yaml): проектная схема `spydell`.
+- [spydell-design](../openspec/schemas/spydell-design/schema.yaml): схема дизайн-change уровня В —
+  proposal и задачи дизайна с контрольными точками утверждения, без specs и технического design.
 - [proposal](../openspec/schemas/spydell/templates/proposal.md): источники, срез и предпосылки.
 - [spec](../openspec/schemas/spydell/templates/spec.md): проверяемое поведение и трассировка.
 - [qa-plan](../openspec/schemas/spydell/templates/qa-plan.md): черновик пользовательского QA из specs
@@ -23,6 +25,11 @@
 о неприменимости QA. В design перед решениями описываются существующие механизмы и тестовые швы,
 а решение на границе модулей или контрактов сравнивает не меньше двух разных кандидатов.
 Конфиг ссылается на `CONSTRAINTS.md` как на инженерную планку проекта, если файл есть.
+Для интерфейса specs ссылаются на утверждённые макеты, `DESIGN.md` и UI-спеку, а design не содержит визуальных решений.
+
+Схема `spydell-design` написана с нуля: proposal → tasks, apply требует оба артефакта. Specs в ней нет,
+поэтому `openspec new change` сам ставит `skip_specs: true`, а архивация идёт с `--skip-specs` и ничего
+не вливает в основные specs. Вариант со `skip_specs` в основной схеме отклонён: там обязателен технический design.
 Сохранены upstream-правила delta-specs, включая полные MODIFIED-блоки и проверяемые задачи.
 Для соблюдения лимита строк длинные инструкции перенесены без изменения смысла.
 
@@ -84,6 +91,8 @@ openspec status --change <change-name> --json
 | Явное skip_specs для отсутствующего behavior delta | Specs пропускаются штатным механизмом |
 | `qa-plan` на 1.16.0 | Отдельный пункт status после specs; `instructions qa-plan` отдаёт `acceptance/qa-plan.md` и шаблон |
 | Apply без `qa-plan` | `instructions apply` — состояние `ready`; `validate --strict` проходит |
+| `spydell-design` на 1.16.0 | `schema validate` проходит; new change ставит `skip_specs: true`; status — proposal → tasks |
+| Дизайн-change целиком | apply доходит до `all_done`, `validate --strict` проходит, `archive --skip-specs` оставляет `openspec/specs` пустым; без предупреждений, если в proposal есть Why и маркированный What Changes |
 
 Для повторной проверки структуры:
 

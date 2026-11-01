@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install Spydell skills without a plugin manager and add the Spydell schema to OpenSpec (user level or project)."""
+"""Install Spydell skills without a plugin manager and add the Spydell schemas to OpenSpec (user level or project)."""
 
 import argparse
 import hashlib
@@ -118,9 +118,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     default_home = Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex")))
     parser.add_argument("--skills-dir", type=Path, default=default_home / "skills")
-    parser.add_argument("--project", type=Path, help="Existing project; copy schema and merge OpenSpec config")
+    parser.add_argument("--project", type=Path, help="Existing project; copy schemas and merge OpenSpec config")
     parser.add_argument("--user-schema", action="store_true",
-                        help="Install the schema once at OpenSpec user level; --project then merges config only")
+                        help="Install the schemas once at OpenSpec user level; --project then merges config only")
     parser.add_argument("--schema-dir", type=Path, help="User-level schema directory (default: OpenSpec's)")
     parser.add_argument("--project-only", action="store_true", help="Do not install global Spydell skills")
     parser.add_argument("--replace", action="store_true", help="Back up and replace differing skill/schema directories")
@@ -131,26 +131,28 @@ def main():
         parser.error("--project-only requires --project or --user-schema")
     if args.schema_dir and not args.user_schema:
         parser.error("--schema-dir requires --user-schema")
-    schema_source = ROOT / "openspec/schemas/spydell"
+    schema_sources = sorted(path for path in (ROOT / "openspec/schemas").iterdir() if path.is_dir())
     candidates = []
     if not args.project_only:
         for source in sorted((ROOT / "skills").iterdir()):
             candidates.append((source, args.skills_dir.expanduser().absolute() / source.name, f"skills/{source.name}"))
     if args.user_schema:
-        user_target = (args.schema_dir or user_schemas_dir()).expanduser().absolute() / "spydell"
-        if user_target.is_symlink() and user_target.resolve() == schema_source.resolve():
-            print(f"Schema is linked to this clone: {user_target}")
-        else:
-            candidates.append((schema_source, user_target, "user-schema"))
+        for schema_source in schema_sources:
+            user_target = (args.schema_dir or user_schemas_dir()).expanduser().absolute() / schema_source.name
+            if user_target.is_symlink() and user_target.resolve() == schema_source.resolve():
+                print(f"Schema is linked to this clone: {user_target}")
+            else:
+                candidates.append((schema_source, user_target, f"user-schema/{schema_source.name}"))
     if args.project:
         project = args.project.expanduser().resolve()
         if not project.is_dir():
             parser.error("--project must name an existing directory")
-        if not args.user_schema:
-            candidates.append((schema_source, project / "openspec/schemas/spydell", "schema"))
-        elif (project / "openspec/schemas/spydell").exists():
-            print("Note: a project copy of the schema overrides the user-level one: "
-                  f"{project / 'openspec/schemas/spydell'}")
+        for schema_source in schema_sources:
+            project_schema = project / "openspec/schemas" / schema_source.name
+            if not args.user_schema:
+                candidates.append((schema_source, project_schema, f"schema/{schema_source.name}"))
+            elif project_schema.exists():
+                print(f"Note: a project copy of the schema overrides the user-level one: {project_schema}")
         config = project / "openspec/config.yaml"
         if (project / "openspec/config.yml").exists():
             if config.exists():

@@ -1,0 +1,65 @@
+# Spydell design change: UX and visual design that later implementation changes build on.
+name: spydell-design
+version: 1
+description: Spydell design change - proposal → design tasks with approval checkpoints; no specs, archive merges nothing
+artifacts:
+  - id: proposal
+    generates: proposal.md
+    description: What is being designed, why, and which slices depend on it
+    template: proposal.md
+    instruction: |
+      Create the proposal for a design change: UX and visual design that implementation changes will build on.
+      Use this schema when navigation or information architecture changes, several flows are designed together,
+      new components or tokens appear, a redesign is under way, several slices depend on one design, or the
+      design runs ahead of development. A small design inside one slice stays in that slice's change instead.
+
+      Sections:
+      - **Why**: the user problem and the slices or waves waiting for this design.
+      - **What Changes**: a bullet list of screens, flows, navigation or information architecture, components
+        and tokens being designed; what is explicitly out of scope.
+      - **UX Frame**: link the product's living UX frame (the project's UI spec, or ux.md in the initiative
+        package) and read it before designing. Do not copy it; this change will extend it on approval.
+      - **Design System**: DESIGN.md, theme tokens, components.json, .pen or Figma files, Storybook - whatever
+        the project has, in that order of preference. Deviation from the system is a choice for the designer.
+      - **Approval**: who approves (designer or UX expert) and the two checkpoints: flows and wireframes first,
+        visual mockups second.
+
+      This change has no specs and no technical design. Behavior requirements are written later in the
+      implementation changes that reference the approved design. Set `skip_specs: true` in the change's
+      `.openspec.yaml`, since no spec-level behavior changes here.
+    requires: []
+
+  - id: tasks
+    generates: tasks.md
+    description: Design tasks with approval checkpoints
+    template: tasks.md
+    instruction: |
+      Create the design task list. Each tracked task is a checkbox: `- [ ] X.Y Task description`, and states
+      how its completion is verified (an approved artifact, a lint run, a recorded decision).
+
+      Required order:
+      1. Read the UX frame, the design system and the requirements of the dependent slices.
+      2. Flows and wireframes. Before approval run the coherence check: fits the navigation, reuses existing
+         patterns and components, terms match the glossary, states and accessibility are covered, no conflict
+         with neighbouring flows. A mismatch goes to the designer as a choice, never as a silent exception.
+         Checkpoint 1: the designer approves flows and wireframes; record the decision with its date.
+      3. Visual mockups on the design system; the same coherence check. Run `npx @google/design.md lint`
+         when DESIGN.md exists and the CLI is available. Checkpoint 2: the designer approves the mockups.
+      4. Extend the UX frame with new navigation, flows, patterns and terms; add new tokens and Do's and Don'ts
+         to DESIGN.md. Link the approved artifacts; do not copy them into documents.
+
+      Tasks are done by the agent with the tools it has (Pencil MCP for .pen, Figma) or by the designer.
+      Checks are the designer's review and the lint, not user QA. A change made after approval goes back
+      to the designer.
+
+      Keep archive as an untracked follow-up: archive with `--skip-specs`, because nothing in this change
+      may enter the main specs - they would assert behavior the code does not have yet.
+    requires:
+      - proposal
+
+apply:
+  requires: [proposal, tasks]
+  tracks: tasks.md
+  instruction: |
+    Work through the design tasks in order; stop at each approval checkpoint until the designer's dated
+    decision is recorded. The change closes on the designer's final approval.
