@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spydell QA"
+  short_description: "План и прогон пользовательского тестирования"
+  default_prompt: "Используй $spydell-qa, чтобы составить QA-план из specs или протестировать сборку и записать дефекты."

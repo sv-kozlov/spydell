@@ -8,6 +8,6 @@
   },
   "homepage": "https://github.com/sv-kozlov/spydell",
   "repository": "https://github.com/sv-kozlov/spydell",
-  "keywords": ["spydell", "requirements", "roadmap", "openspec", "sdd", "critic", "evaluation", "triz"],
+  "keywords": ["spydell", "requirements", "roadmap", "openspec", "sdd", "critic", "evaluation", "triz", "qa"],
   "skills": "./skills/"
 }
