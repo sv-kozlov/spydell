@@ -205,6 +205,10 @@ Wayfinder — необязательный журнал решений; пред
 Если проект передаёт существенные решения ИИ, прочитай
 [cognitive-resilience.md](references/cognitive-resilience.md).
 Для изменчивых и высокорисковых утверждений соблюдай правила внешней проверки среды.
+На воротах (перед apply, archive и закрытием волны) проверяй программой: `openspec status --change <имя> --json`,
+`openspec validate <имя> --strict --json` — в каждом корне OpenSpec среза, для общего store с `--store <id>` — и `python3 <spydell>/scripts/check.py` (`map`, `roadmap`, `acceptance`, `qa`, `trace`), где `<spydell>` — каталог
+этого навыка ([scripts/check.py](scripts/check.py)); где запускать — в
+[sdd-coordination.md](references/sdd-coordination.md) и [wave-review.md](references/wave-review.md).
 
 ## Вердикт и передача
 

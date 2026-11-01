@@ -184,7 +184,7 @@ codex plugin add spydell@spydell
 
 | Путь | Содержание |
 | --- | --- |
-| `skills/` | spydell, roadmap, spec-review, qa, critic, evaluator, systems, ai-agents, triz — с references и metadata |
+| `skills/` | spydell, roadmap, spec-review, qa, critic, evaluator, systems, ai-agents, triz — с references и metadata; `spydell/scripts/check.py` — проверки на воротах |
 | `openspec/` | Схемы `spydell` и `spydell-design` и образец проектной конфигурации |
 | `.claude-plugin/`, `.codex-plugin/` | Манифесты плагина и marketplace для Claude Code и Codex |
 | `install.py` | Подключение схем к OpenSpec — в проект или на уровень пользователя; установка навыков без плагинов |
@@ -276,6 +276,10 @@ Default существующего проекта сохраняется. Зав
   и пятиминутная модель угроз STRIDE для недоверенного ввода; roadmap отделяет развёртывание от включения.
 - Уроки волны разложены по категориям; вопросы-факты уходят в фоновое исследование, не останавливая опрос;
   брифы для отдельных агентов описывают поведение и полные критерии приёмки.
+- На воротах (перед реализацией, архивацией и закрытием волны) проверки выполняет программа: `openspec status`
+  и `openspec validate --strict` с JSON-выводом и скрипт `skills/spydell/scripts/check.py` (только стандартная
+  библиотека Python). Он проверяет коды решений, разделы и ссылки карты, циклы и готовность срезов roadmap,
+  разделы документа приёмки, статусы и доказательства в отчёте QA и трассировку «требование → кейс → матрица».
 
 ### 0.4.0
 

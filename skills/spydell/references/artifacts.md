@@ -37,7 +37,8 @@
   если волна ведётся через OpenSpec change, эти материалы живут в его каталоге (`acceptance.md` и `acceptance/`),
   а комплект на них ссылается;
 - матрица соответствия волны — `acceptance/spec-matrix.md` в каталоге OpenSpec change, без change —
-  `waves/<wave>/spec-matrix.md`: Requirement | Scenario | Где реализовано | Тест | Статус;
+  `waves/<wave>/spec-matrix.md`: Requirement | Scenario | Где реализовано | Тест | Статус; имена Requirement и Scenario —
+  дословно из specs, иначе `check.py trace` даст ложные срабатывания;
   статусы: покрыто тестом, реализовано без теста, проверяется только в QA, не реализовано;
 - `cjm-coverage.md` — для инициатив с UI: шаг пути пользователя → экран → требование → scenario; вход QA-плана;
 - `ux.md` — каркас UX продукта, если проект не ведёт свою UI-спеку: карта информационной архитектуры и навигации,
