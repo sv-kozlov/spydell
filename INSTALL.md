@@ -3,6 +3,14 @@
 Репозиторий приватный: для установки нужен доступ к `sv-kozlov/spydell` через git
 (`gh auth login` или SSH-ключ GitHub).
 
+Что проверено в средах (ноябрь 2026):
+
+| Среда | Статус |
+| --- | --- |
+| Claude Code и Claude Desktop | Основная: навыки, субагенты, связанные сессии Desktop, `claude -p` проверены запуском |
+| Codex | Установка навыков и `codex exec` проверены запуском; навыки Matt, `$wayfinder` и хуки ponytail в Codex не проверялись |
+| Gemini CLI и другие | Не проверялись; имена навыков — по списку доступных в среде, модели — по разведке ([orchestration.md](skills/spydell/references/orchestration.md)) |
+
 ## 1. Навыки Spydell
 
 ### Claude Code
