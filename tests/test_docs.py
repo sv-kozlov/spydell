@@ -18,5 +18,21 @@ class ArtifactPathTests(unittest.TestCase):
                 self.assertIn(f"`waves/<wave>/{name}`", text)
 
 
+class LinkTests(unittest.TestCase):
+    """Relative markdown links in skills and docs resolve to existing files."""
+
+    def test_relative_links_resolve(self):
+        import re
+        broken = []
+        for path in [*ROOT.glob("skills/**/*.md"), *ROOT.glob("docs/*.md"), ROOT / "README.md", ROOT / "INSTALL.md"]:
+            text = re.sub(r"```.*?```", "", path.read_text(encoding="utf-8"), flags=re.S)
+            for target in re.findall(r"\]\(([^)#\s]+)", text):
+                if re.match(r"^[a-z]+://|^mailto:", target):
+                    continue
+                if not (path.parent / target).exists():
+                    broken.append(f"{path.relative_to(ROOT)} -> {target}")
+        self.assertEqual(broken, [])
+
+
 if __name__ == "__main__":
     unittest.main()
