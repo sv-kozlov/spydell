@@ -39,10 +39,14 @@ rules:
   tasks:
     - >-
       Link implementation groups to scenarios, dependencies and completion evidence. Include their own tests and
-      docs; reserve the final group for integrated wave acceptance. Separate build, integration and release order.
+      docs; in the change that closes a wave, reserve the final group for integrated wave acceptance. Separate build,
+      integration and release order.
     - >-
-      Track ordinary tests, independent code review and fixes, user QA plan/execution/report, code re-review using
-      QA evidence, then independent spec/decision/document review and revalidation of next-wave prerequisites.
+      In the change that closes a wave, track ordinary tests, independent code review and fixes, user QA
+      plan/execution/report, code re-review using QA evidence, then independent spec/decision/document review and
+      revalidation of next-wave prerequisites. A single-capability change that closes no wave tracks ordinary tests
+      and independent code review; user QA and the code re-review with its evidence when the QA plan has
+      user-interaction cases; independent spec review when the proposal flags notable risk.
     - >-
       Keep archive as an untracked follow-up, not a checkbox required before archive. For a wave spanning changes,
       link one shared acceptance report and identify which change coordinates closure instead of duplicating it.
@@ -85,16 +89,18 @@ operations:
         Fix defects in code; update accepted changes at their source and all affected documents;
         return new material choices to the user. Re-review until the gate policy allows closing the round.
       - >-
-        Do not cap review rounds at an arbitrary number or treat deferral as a fix. Disputed findings stay
-        open; refuted findings need
+        Neither the number of rounds nor deferral closes a gate. After three rounds on one gate without convergence,
+        stop and put the remaining findings to the owner with a recommendation; a dated owner decision says whether
+        they stay recorded or work continues. Disputed findings stay open; refuted findings need
         reviewer-verifiable evidence. Code or behavioral changes invalidate affected checks and require reruns.
         A blocked mandatory check prevents wave closure and dependent next-wave implementation.
         Independent research may continue. With no next wave, reconcile the final initiative documents.
   archive:
     guidance:
       - >-
-        Before archiving, verify current evidence for ordinary tests, final independent code review,
-        required user QA, code re-review using its plan/report, and spec/decision/document reconciliation.
+        Before archiving, verify current evidence for ordinary tests, final independent code review, and the
+        acceptance steps the change tracks: user QA and code re-review using its plan/report when QA applies,
+        spec/decision/document reconciliation when the change closes a wave or the proposal flags notable risk.
         Check the applicable gate policy decision and the findings it leaves recorded.
         Check the shared wave acceptance report, revision coverage and dependent next-wave readiness.
       - >-

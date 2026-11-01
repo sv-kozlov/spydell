@@ -284,9 +284,11 @@ def check_acceptance(path, issues):
     for report in (path.parent / "acceptance" / "qa-report.md", path.parent / "qa-report.md"):
         if not report.exists():
             continue
+        latest = {}  # a re-run after a fix adds a row; the last row of a case is its current result
         for row in table_rows(report.read_text(encoding="utf-8")):
-            status = (column(row, "статус", "status") or "").strip().lower()
-            case = next(iter(row.values()), "").strip()
+            if column(row, "статус", "status") is not None:
+                latest[next(iter(row.values()), "").strip()] = (column(row, "статус", "status") or "").strip().lower()
+        for case, status in latest.items():
             if status in ("не пройден", "заблокирован") and not any(re.search(rf"(?<![\w-]){re.escape(case)}(?![\w-])", item)
                                                                      for item in open_items):
                 issue(issues, "acceptance.qa", f"Кейс {case} «{status}», но не записан в «Не выполнено» с владельцем "
@@ -312,16 +314,18 @@ def check_qa(path, issues):
 
 
 def check_trace(change, issues):
-    requirements, scenarios = set(), set()
+    requirements, scenarios, pairs = set(), set(), set()
     for spec in sorted((change / "specs").rglob("*.md")):
         removed = False
         for line in spec.read_text(encoding="utf-8").splitlines():
             if line.startswith("## "):
                 removed = "REMOVED" in line.upper()
             elif line.startswith("### Requirement:") and not removed:
-                requirements.add(line.split(":", 1)[1].strip())
+                requirement = line.split(":", 1)[1].strip()
+                requirements.add(requirement)
             elif line.startswith("#### Scenario:") and not removed:
                 scenarios.add(line.split(":", 1)[1].strip())
+                pairs.add((requirement, line.split(":", 1)[1].strip()))
     matrix_path = change / "acceptance/spec-matrix.md"
     if not matrix_path.exists():
         issue(issues, "trace.matrix", "Нет acceptance/spec-matrix.md", str(change))
@@ -331,8 +335,10 @@ def check_trace(change, issues):
     covered = {column(row, "requirement", "требование") for row in matrix}
     for name in sorted(requirements - covered):
         issue(issues, "trace.uncovered", f"Requirement «{name}» нет в spec-matrix", str(matrix_path))
-    for name in sorted(scenarios - {column(row, "scenario", "сценарий") for row in matrix}):
-        issue(issues, "trace.scenario-uncovered", f"Scenario «{name}» нет в spec-matrix", str(matrix_path))
+    matrix_pairs = {(column(row, "requirement", "требование"), column(row, "scenario", "сценарий")) for row in matrix}
+    for requirement, name in sorted(pairs - matrix_pairs):
+        issue(issues, "trace.scenario-uncovered", f"Scenario «{name}» требования «{requirement}» нет в spec-matrix",
+              str(matrix_path))
     for row in matrix:
         if "_mismatch" in row:
             issue(issues, "trace.row", f"Число ячеек не совпадает с заголовком: {row['_mismatch'][:80]}", str(matrix_path))

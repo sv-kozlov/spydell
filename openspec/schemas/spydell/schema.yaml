@@ -327,8 +327,9 @@ artifacts:
       - The "Integrated Wave Acceptance" group from the template belongs to the change that closes a wave;
         in a multi-change wave keep it only in the coordinator change and link the same acceptance report from the
         others. A single-capability change that closes no wave keeps only: integrated checks with independent code
-        review; user QA execution if qa-plan has user-interaction cases; independent spec review only if the
-        proposal flags notable risk. Drop the remaining acceptance tasks instead of ticking them unperformed.
+        review; user QA execution and the code re-review with its evidence if qa-plan has user-interaction cases;
+        independent spec review only if the proposal flags notable risk. Drop the remaining acceptance tasks instead
+        of ticking them unperformed.
       - End each task group heading with an execution hint for whoever runs it:
         `— <class>/<effort>, group <letter>`, where class is strong, medium or light
         (сильная, средняя, лёгкая) and effort is low, medium, high or max (низкий, средний,

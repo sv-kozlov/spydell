@@ -121,6 +121,9 @@ class CheckScriptTests(unittest.TestCase):
         listed = good + "- QA-2 падает на Safari — владелец: Иван; следующий шаг: исправить\n" \
                         "- QA-12 нет стенда — владелец: Пётр; следующий шаг: поднять стенд\n"
         self.assertTrue(self.check("acceptance", self.write("acceptance.md", listed))["valid"])
+        self.write("qa-report.md", "| ID | Статус | Доказательство |\n| --- | --- | --- |\n"
+                   "| QA-2 | не пройден | |\n| QA-2 | пройден | b.png |\n")
+        self.assertTrue(self.check("acceptance", self.write("acceptance.md", good))["valid"])
 
     def test_qa(self):
         good = ("| ID | Статус | Доказательство |\n| --- | --- | --- |\n"
@@ -219,6 +222,14 @@ class CheckScriptTests(unittest.TestCase):
                    "## ADDED Requirements\n\n### Requirement: Export works\n\n#### Scenario: Export shown\n\n"
                    "#### Scenario: Export fails\n")
         self.write("change/acceptance/qa-plan.md", "| ID | Scenario |\n| --- | --- |\n| QA-1 | Export shown |\n")
+        self.assertEqual(self.codes(self.check("trace", change)), {"trace.scenario-uncovered"})
+        self.write("change/specs/cap/spec.md",
+                   "## ADDED Requirements\n\n### Requirement: Export works\n\n#### Scenario: Unauthorized\n\n"
+                   "### Requirement: Import works\n\n#### Scenario: Unauthorized\n")
+        self.write("change/acceptance/spec-matrix.md",
+                   "| Requirement | Scenario | Где | Тест | Статус |\n| --- | --- | --- | --- | --- |\n"
+                   "| Export works | Unauthorized | e.py | t | покрыто тестом |\n| Import works | | i.py | t | покрыто тестом |\n")
+        self.write("change/acceptance/qa-plan.md", "| ID | Scenario |\n| --- | --- |\n| QA-1 | Unauthorized |\n")
         self.assertEqual(self.codes(self.check("trace", change)), {"trace.scenario-uncovered"})
 
 

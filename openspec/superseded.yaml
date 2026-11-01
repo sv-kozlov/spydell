@@ -61,3 +61,15 @@
   When CONSTRAINTS.md exists it is the project's engineering bar: designs and tasks respect it and never lower it silently.
   File existence, completed task boxes and OpenSpec validation do not establish wave acceptance.
   Dependent next-wave specs remain provisional until predecessor implementation and evidence are reviewed.
+- Link implementation groups to scenarios, dependencies and completion evidence. Include their own tests and docs; reserve
+  the final group for integrated wave acceptance. Separate build, integration and release order.
+- Track ordinary tests, independent code review and fixes, user QA plan/execution/report, code re-review using QA evidence,
+  then independent spec/decision/document review and revalidation of next-wave prerequisites.
+- Do not cap review rounds at an arbitrary number or treat deferral as a fix. Disputed findings stay open; refuted findings
+  need reviewer-verifiable evidence. Code or behavioral changes invalidate affected checks and require reruns. A blocked
+  mandatory check prevents wave closure and dependent next-wave implementation. Independent research may continue. With
+  no next wave, reconcile the final initiative documents.
+- Before archiving, verify current evidence for ordinary tests, final independent code review, required user QA, code
+  re-review using its plan/report, and spec/decision/document reconciliation. Check the applicable gate policy decision
+  and the findings it leaves recorded. Check the shared wave acceptance report, revision coverage and dependent next-wave
+  readiness.
