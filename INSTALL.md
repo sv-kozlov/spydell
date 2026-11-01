@@ -48,7 +48,7 @@ npx skills@latest add sv-kozlov/spydell -g -a codex
 
 ### Matt Pocock (обязательно)
 
-Spydell использует `grilling`, `research`, `domain-modeling`, `prototype`, `tdd`, `diagnosing-bugs`
+Spydell использует `research`, `domain-modeling`, `prototype`, `tdd`, `diagnosing-bugs`
 и `code-review`; по условиям — `wayfinder` и `handoff`. Они ставятся из marketplace Matt:
 
 ```bash
@@ -69,11 +69,12 @@ codex plugin add mattpocock-skills@mattpocock
 `wayfinder`, `to-spec`, `to-tickets`, `grill-me`, `handoff` и ряд других помечены
 `disable-model-invocation`: агент не может вызвать их сам. Когда процессу нужен Wayfinder,
 Spydell готовит передачу и просит пользователя запустить `/wayfinder` (Claude Code)
-или `$wayfinder` (Codex). `grilling`, `research`, `domain-modeling`, `prototype`, `tdd`,
+или `$wayfinder` (Codex). `research`, `domain-modeling`, `prototype`, `tdd`,
 `diagnosing-bugs` и `code-review` агент вызывает сам.
 Затем выполните `setup-matt-pocock-skills` в проекте для выбора tracker и размещения документов;
 при использовании Spydell согласуйте его с существующими каноническими документами, не создавайте дубли.
-Matt обновляется отдельно; после обновления сверяйте границы grilling, хранения решений и review.
+Опрос владельца ведёт собственный `spydell-grilling`; `grilling` и `grill-me` Matt в работе по Spydell не нужны.
+Matt обновляется отдельно; после обновления сверяйте границы хранения решений и review.
 
 ### Ponytail (по желанию)
 
@@ -99,7 +100,7 @@ Ponytail работает всю сессию; `/ponytail off` выключае�
 записывает её в `CONSTRAINTS.md` и следит, чтобы агент её не понижал. Без него Spydell записывает
 короткую планку в тот же файл сам. Ставьте только этот навык, не весь набор: остальные навыки Osmani
 (`spec-driven-development`, `planning-and-task-breakdown`, `idea-refine`, `interview-me`) запускаются сами
-и перехватывают работу Spydell и `grilling`.
+и перехватывают работу Spydell и `spydell-grilling`.
 
 ```bash
 npx skills@latest add addyosmani/agent-skills -g -s constraint-driven-development -a claude-code codex

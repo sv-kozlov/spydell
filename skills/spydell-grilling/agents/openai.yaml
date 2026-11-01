@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spydell Grilling"
+  short_description: "Опрос владельца раундами по дереву решений"
+  default_prompt: "Используй $spydell-grilling: построй дерево решений, задай фронтир вопросов с кодами R<раунд>_Q<n>, вопросы об опыте — открыто, и запиши решения в карту."

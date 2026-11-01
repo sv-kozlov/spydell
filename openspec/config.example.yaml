@@ -28,7 +28,7 @@ rules:
       selecting implementation mechanisms. Trace requirements to accepted outcomes or decisions.
     - >-
       Check existing capabilities and active changes for conflicting or overlapping requirements and delta bases.
-      Return unresolved material product choices to grilling; never normalize a code defect into a requirement.
+      Return unresolved material product choices to spydell-grilling; never normalize a code defect into a requirement.
   design:
     - >-
       Read the complete specs for all declared capabilities first. With explicit skip_specs for a change having

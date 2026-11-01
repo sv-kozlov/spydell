@@ -9,6 +9,7 @@
 Семейство Spydell:
 
 - `spydell` — единый вход от концепции к требованиям и координации порученного процесса;
+- `spydell-grilling` — опрос владельца раундами по дереву решений: решения и опыт, коды вопросов, запись в карту;
 - `spydell-roadmap` — эпики, срезы, зависимости, волны и пересмотр по результатам реализации;
 - `spydell-spec-review` — независимое ревью документов и готовности следующих specs;
 - `spydell-qa` — стратегия, план и прогон пользовательского тестирования, отчёт о дефектах и перепроверка;
@@ -17,7 +18,6 @@
 
 Обязательные зависимости — OpenSpec (ниже) и навыки Matt:
 
-- `grilling` — структурированный HITL-опрос материальных решений;
 - `research` — проверка фактов по первичным и применимым источникам;
 - `domain-modeling` — уточнение терминов и границ модели;
 - `prototype` — дешёвый конкретный объект, когда решение не принять на бумаге;
@@ -43,12 +43,12 @@
 (`brainstorming`, `writing-plans`) не запускается, даже если его описание требует запуска перед любой работой:
 замысел, требования и план ведёт Spydell.
 
-`grill-me` — совместимый короткий вход, который вызывает `grilling`. Достаточно рабочего `grilling`; не нужно проводить оба опроса.
+Опрос ведёт `spydell-grilling`; `grilling` и `grill-me` Matt в работе по Spydell не нужны.
 
 `wayfinder` (как и `grill-me`, `to-spec`, `handoff`) помечен `disable-model-invocation`: агент не вызывает его сам.
 Когда нужен Wayfinder, подготовь передачу по [sdd-coordination.md](sdd-coordination.md) (раздел «Переход Spydell → Wayfinder»)
 и попроси пользователя запустить `/wayfinder` (Claude Code) или `$wayfinder` (Codex). Не воспроизводи его процедуру внутри Spydell.
-`grilling`, `research`, `domain-modeling`, `prototype`, `tdd`, `diagnosing-bugs` и `code-review` агент вызывает сам.
+`spydell-grilling`, `research`, `domain-modeling`, `prototype`, `tdd`, `diagnosing-bugs` и `code-review` агент вызывает сам.
 
 Для разработки по SDD дополнительно нужны:
 
@@ -156,7 +156,7 @@ concept → прояснение → требования → roadmap → диз
 ## Частные случаи маршрута
 
 - Уже есть согласованный change contract: не повторять discovery; сразу проверить readiness и перейти в OpenSpec.
-- Реализация выявила новый выбор: приостановить apply → решение человека (grilling или активный Wayfinder) → Spydell/OpenSpec update → продолжить apply.
+- Реализация выявила новый выбор: приостановить apply → решение человека (spydell-grilling или активный Wayfinder) → Spydell/OpenSpec update → продолжить apply.
 
 ## Что не дублировать
 
