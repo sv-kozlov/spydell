@@ -115,6 +115,12 @@ class CheckScriptTests(unittest.TestCase):
         broken = good.replace("## QA\n", "## Прогон\n").replace("владелец: Иван; ", "")
         self.assertEqual(self.codes(self.check("acceptance", self.write("acceptance.md", broken))),
                          {"acceptance.section", "acceptance.open"})
+        self.write("qa-report.md", "| ID | Статус | Доказательство |\n| --- | --- | --- |\n"
+                   "| QA-1 | пройден | a.png |\n| QA-2 | не пройден | |\n| QA-12 | заблокирован | |\n")
+        self.assertEqual(self.codes(self.check("acceptance", self.write("acceptance.md", good))), {"acceptance.qa"})
+        listed = good + "- QA-2 падает на Safari — владелец: Иван; следующий шаг: исправить\n" \
+                        "- QA-12 нет стенда — владелец: Пётр; следующий шаг: поднять стенд\n"
+        self.assertTrue(self.check("acceptance", self.write("acceptance.md", listed))["valid"])
 
     def test_qa(self):
         good = ("| ID | Статус | Доказательство |\n| --- | --- | --- |\n"
@@ -209,6 +215,11 @@ class CheckScriptTests(unittest.TestCase):
                    "## ADDED Requirements\n\n### Requirement: Export works\n\n#### Scenario: Export shown\n\n"
                    "### Requirement: Import works\n")
         self.assertEqual(self.codes(self.check("trace", change)), {"trace.uncovered", "trace.scenario"})
+        self.write("change/specs/cap/spec.md",
+                   "## ADDED Requirements\n\n### Requirement: Export works\n\n#### Scenario: Export shown\n\n"
+                   "#### Scenario: Export fails\n")
+        self.write("change/acceptance/qa-plan.md", "| ID | Scenario |\n| --- | --- |\n| QA-1 | Export shown |\n")
+        self.assertEqual(self.codes(self.check("trace", change)), {"trace.scenario-uncovered"})
 
 
 if __name__ == "__main__":

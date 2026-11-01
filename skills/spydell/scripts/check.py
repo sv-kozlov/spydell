@@ -7,9 +7,11 @@ Subcommands:
   map <map.md>...                       decision codes, required sections, relative links
   roadmap <roadmap.md>... [--map PATH]  no slices, dependency cycles, unknown slices, ready-for-build with open decisions,
                                         «Исполнение» as <class>/<effort>, «Параллельно с» within the wave and not a predecessor
-  acceptance <acceptance.md>...         required sections, owner and next step for each "Не выполнено" item
+  acceptance <acceptance.md>...         required sections, owner and next step for each "Не выполнено" item, every failed
+                                        or blocked case of the sibling qa-report.md listed in "Не выполнено"
   qa <qa-report.md>...                  status of every case, evidence for passed cases
-  trace <change-dir>...                 Requirement -> spec-matrix row; scenario names in qa-plan and spec-matrix exist
+  trace <change-dir>...                 Requirement and Scenario -> spec-matrix row; scenario names in qa-plan and
+                                        spec-matrix exist
   run <set-dir>...                      every launch in run-log.md matches a launch line of the map's «Контракт
                                         прогона» in all options except brief, model, effort, directory, output and
                                         budget; launch tools are claude, codex, start_session and those in ../models.md
@@ -271,11 +273,25 @@ def check_acceptance(path, issues):
     for name in ACCEPTANCE_SECTIONS:
         if find_section(found, name) is None:
             issue(issues, "acceptance.section", f"Нет раздела «{name}»", str(path))
+    open_items = []
     for line in (find_section(found, "Не выполнено") or "").splitlines():
         item = line.strip()
         if item.startswith(("-", "*")) and item.lstrip("-* ").lower() not in ("нет", "нет."):
             if "владелец:" not in item.lower() or "следующий шаг:" not in item.lower():
                 issue(issues, "acceptance.open", f"Пункт без «владелец:» и «следующий шаг:»: {item[:80]}", str(path))
+            else:
+                open_items.append(item)
+    for report in (path.parent / "acceptance" / "qa-report.md", path.parent / "qa-report.md"):
+        if not report.exists():
+            continue
+        for row in table_rows(report.read_text(encoding="utf-8")):
+            status = (column(row, "статус", "status") or "").strip().lower()
+            case = next(iter(row.values()), "").strip()
+            if status in ("не пройден", "заблокирован") and not any(re.search(rf"(?<![\w-]){re.escape(case)}(?![\w-])", item)
+                                                                     for item in open_items):
+                issue(issues, "acceptance.qa", f"Кейс {case} «{status}», но не записан в «Не выполнено» с владельцем "
+                      "и следующим шагом — ворота не закрываются", str(path))
+        break
 
 
 def check_qa(path, issues):
@@ -315,6 +331,8 @@ def check_trace(change, issues):
     covered = {column(row, "requirement", "требование") for row in matrix}
     for name in sorted(requirements - covered):
         issue(issues, "trace.uncovered", f"Requirement «{name}» нет в spec-matrix", str(matrix_path))
+    for name in sorted(scenarios - {column(row, "scenario", "сценарий") for row in matrix}):
+        issue(issues, "trace.scenario-uncovered", f"Scenario «{name}» нет в spec-matrix", str(matrix_path))
     for row in matrix:
         if "_mismatch" in row:
             issue(issues, "trace.row", f"Число ячеек не совпадает с заголовком: {row['_mismatch'][:80]}", str(matrix_path))
