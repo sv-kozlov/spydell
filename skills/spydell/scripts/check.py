@@ -105,26 +105,88 @@ def check_map(path, issues):
             issue(issues, "map.link", f"Ссылка ведёт на несуществующий путь: {target}", str(path))
 
 
-def check_roadmap(path, map_path, issues):
-    text = path.read_text(encoding="utf-8")
+FIELD = re.compile(r"^\s*[-*]?\s*\**([^:*|]+?)\**\s*:\s*(.*)$")
+NO_DEPS = {"", "нет", "none", "—", "-"}
+
+
+def split_ids(value):
+    return [item.strip(" `") for item in re.split(r"[,;]", value or "") if item.strip(" `").lower() not in NO_DEPS]
+
+
+def parse_roadmap(text):
+    """Return slices by ID from the «Срезы» table and from '### <ID> — title' cards; table fields win.
+
+    Each slice: id, title, wave, state, deps, change, repo, body (card lines), heading.
+    """
     slices, current = {}, None
+
+    def blank(ident):
+        return {"id": ident, "title": "", "wave": "", "state": "", "deps": [], "change": "", "repo": "",
+                "body": [], "heading": ""}
+
     for line in text.splitlines():
         match = HEADING.match(line)
         if match and len(match.group(1)) == 3:
-            current = match.group(2).split()[0].rstrip(".:—-")
-            slices[current] = {"deps": [], "state": "", "body": []}
-        elif match:
+            heading = match.group(2)
+            ident = heading.split()[0].rstrip(".:—-")
+            current = slices.setdefault(ident, blank(ident))
+            current["heading"] = heading
+            title = re.sub(r"^\S+\s*[—–-]?\s*", "", heading).replace("**", "")
+            current["title"] = re.sub(r"\s*\(.*?\)\s*$", "", title).strip(" *—-")
+            continue
+        if match:
             current = None
-        elif current:
-            slice_ = slices[current]
-            slice_["body"].append(line)
-            label, _, value = line.strip().lstrip("-* ").partition(":")
-            if label.strip().lower() in ("предшественник", "предшественники", "зависит от"):
-                slice_["deps"] += [dep.strip(" `") for dep in re.split(r"[,;]", value) if dep.strip(" `—-")]
-                slice_["deps"] = [dep for dep in slice_["deps"] if dep.lower() not in ("нет", "none")]
-            elif label.strip().lower() == "состояние":
-                slice_["state"] = value.strip(" `")
+            continue
+        if current is None:
+            continue
+        current["body"].append(line)
+        field = FIELD.match(line)
+        if not field:
+            continue
+        label, value = field.group(1).strip().lower(), field.group(2).strip()
+        if label in ("предшественник", "предшественники", "зависит от"):
+            current["deps"] += split_ids(value)
+        elif label == "состояние":
+            current["state"] = value.strip(" `")
+        elif label == "волна":
+            current["wave"] = (value.strip(" `").split() or [""])[0]
+        elif label in ("change", "openspec change"):
+            current["change"] = (re.findall(r"`([^`]+)`", value) or value.split() or [""])[0].strip("`")
+        elif label in ("репозиторий", "repo"):
+            current["repo"] = value.strip(" `")
+    table = find_section(sections(text), "Срезы") or ""
+    ordered = {}
+    for row in table_rows(table):
+        ident = (column(row, "id") or "").strip(" `")
+        if not ident:
+            continue
+        if ident in ordered:
+            ordered[ident]["duplicate"] = True
+            continue
+        slice_ = slices.get(ident) or blank(ident)
+        slice_["title"] = (column(row, "срез", "название") or slice_["title"] or ident).strip()
+        slice_["wave"] = (column(row, "волна") or slice_["wave"]).strip(" `")
+        slice_["state"] = (column(row, "состояние") or slice_["state"]).strip(" `")
+        slice_["deps"] = split_ids(column(row, "предшеств", "зависит")) or slice_["deps"]
+        slice_["change"] = (column(row, "change") or slice_["change"]).strip(" `")
+        slice_["repo"] = (column(row, "репозитор") or slice_["repo"]).strip(" `")
+        slice_["body"] = slice_["body"] + [" | ".join(value for key, value in row.items() if key != "_mismatch")]
+        ordered[ident] = slice_
+    for ident, slice_ in slices.items():
+        ordered.setdefault(ident, slice_)
+    for slice_ in ordered.values():
+        slice_["title"] = slice_["title"] or slice_["id"]
+        if not slice_["wave"]:
+            wave = re.match(r"^[Ww](\d+)", slice_["id"])
+            slice_["wave"] = wave.group(1) if wave else ""
+    return ordered
+
+
+def check_roadmap(path, map_path, issues):
+    slices = parse_roadmap(path.read_text(encoding="utf-8"))
     for name, slice_ in slices.items():
+        if slice_.get("duplicate"):
+            issue(issues, "roadmap.duplicate", f"Срез {name} записан в таблице «Срезы» дважды", str(path))
         for dep in slice_["deps"]:
             if dep not in slices:
                 issue(issues, "roadmap.unknown", f"{name} зависит от неизвестного среза {dep}", str(path))

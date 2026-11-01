@@ -79,6 +79,19 @@ class CheckScriptTests(unittest.TestCase):
         self.assertEqual(self.codes(self.check("roadmap", self.write("roadmap.md", broken))),
                          {"roadmap.cycle", "roadmap.unknown", "roadmap.ready"})
 
+    def test_roadmap_table(self):
+        self.write("map.md", MAP)
+        table = ("## Срезы\n\n| ID | Срез | Волна | Состояние | Предшественники | Change |\n"
+                 "| --- | --- | --- | --- | --- | --- |\n"
+                 "| S1 | base | 1 | ready-for-build | — | `s1` |\n| S2 | next | 2 | candidate | S1 | |\n\n"
+                 "### S2 — next\nПодробности.\n")
+        self.assertTrue(self.check("roadmap", self.write("roadmap.md", table))["valid"])
+        broken = table.replace("| S1 | base | 1 | ready-for-build | — |", "| S1 | base | 1 | ready-for-build | S2 |")
+        broken = broken.replace("Подробности.", "Ждёт R2_Q1").replace("| S2 | next | 2 | candidate |", "| S2 | next | 2 | ready-for-build |")
+        self.assertEqual(self.codes(self.check("roadmap", self.write("roadmap.md", broken))), {"roadmap.cycle", "roadmap.ready"})
+        duplicate = table.replace("| S2 | next | 2 | candidate | S1 | |", "| S2 | next | 2 | candidate | S1 | |\n| S2 | again | 2 | candidate | | |")
+        self.assertEqual(self.codes(self.check("roadmap", self.write("roadmap.md", duplicate))), {"roadmap.duplicate"})
+
     def test_acceptance(self):
         good = "".join(f"## {name}\nok\n\n" for name in ["Ревизии", "Тесты", "Ревью по осям", "QA",
                                                           "Повторившиеся классы находок"])

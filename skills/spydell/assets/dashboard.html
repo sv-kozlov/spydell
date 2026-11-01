@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spydell — дашборд</title>
+<style>
+:root {
+  --bg: #f6f7fb; --panel: #ffffff; --panel-2: #f1f3f9; --text: #1b2033; --muted: #687290; --line: #e2e6f0;
+  --accent: #5b5bd6; --shadow: 0 1px 2px rgba(20,24,40,.06), 0 3px 10px rgba(20,24,40,.05);
+  --s-planned: #9aa3b8; --s-candidate: #7c8aa5; --s-needs-decision: #d99a06; --s-ready-for-spec: #0ea5e9;
+  --s-specifying: #6366f1; --s-ready-for-build: #8b5cf6; --s-in-progress: #2563eb; --s-implemented: #0d9488;
+  --s-accepted: #16a34a; --s-archived: #047857; --s-dropped: #b4536a;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0f1220; --panel: #171b2e; --panel-2: #1e2340; --text: #e7e9f3; --muted: #9aa3c0; --line: #2a3054;
+          --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3); --accent: #8b8bff; }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text);
+  font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 14px 16px 24px; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em; background: var(--panel-2); padding: 0 4px; border-radius: 4px; }
+header h1 { font-size: 17px; margin: 0 0 2px; letter-spacing: -.01em; }
+.meta { color: var(--muted); font-size: 11.5px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.live { display: inline-flex; align-items: center; gap: 5px; }
+.live i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); display: inline-block; }
+.live.on i { background: #22c55e; animation: pulse 2s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,.5); } 70% { box-shadow: 0 0 0 6px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
+details.state { margin-top: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; box-shadow: var(--shadow); }
+details.state summary { cursor: pointer; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+details.state summary b { color: var(--text); text-transform: none; letter-spacing: 0; font-size: 12px; }
+details.state p { margin: 4px 0 8px; white-space: pre-line; }
+details.state b { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 6px; margin-top: 10px; }
+.kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; box-shadow: var(--shadow); min-width: 0; }
+.kpi .label { color: var(--muted); font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi .value { font-size: 15px; font-weight: 650; line-height: 1.2; }
+.kpi .sub { color: var(--muted); font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar { height: 4px; border-radius: 3px; background: var(--line); overflow: hidden; margin-top: 4px; display: flex; }
+.bar i { display: block; height: 100%; }
+.toolbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 12px 0 4px; }
+.toolbar input { flex: 1 1 160px; max-width: 220px; padding: 5px 9px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: inherit; }
+.chip { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 2px 9px 2px 7px; font-size: 11.5px;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 5px; user-select: none; }
+.chip .dot { width: 7px; height: 7px; border-radius: 50%; }
+.chip.off { opacity: .4; }
+.chip .n { color: var(--muted); }
+.layers { margin-top: 8px; }
+.layer { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 10px; position: relative; }
+.layer + .layer { margin-top: 22px; }
+.layer + .layer::before { content: "▾"; position: absolute; top: -19px; left: 50%; transform: translateX(-50%); color: var(--muted); font-size: 13px; }
+.layer.done { border-color: color-mix(in srgb, var(--s-accepted) 45%, var(--line)); }
+.layer.active { border-color: color-mix(in srgb, var(--s-in-progress) 45%, var(--line)); }
+.layer-head { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+.layer-head h2 { font-size: 14px; margin: 0; }
+.layer-head .sub { color: var(--muted); font-size: 11.5px; }
+.layer-head .badge { margin-left: auto; font-size: 10.5px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); }
+.layer.done .badge { color: var(--s-accepted); border-color: var(--s-accepted); }
+.layer.active .badge { color: var(--s-in-progress); border-color: var(--s-in-progress); }
+.layer-progress { height: 4px; border-radius: 3px; background: var(--line); overflow: hidden; margin: -2px 0 9px; }
+.layer-progress i { display: block; height: 100%; background: var(--s-accepted); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--c, var(--s-planned)); border-radius: 9px;
+  padding: 8px 9px; box-shadow: var(--shadow); cursor: pointer; transition: opacity .12s, box-shadow .12s; min-width: 0; }
+.card.dim { opacity: .28; }
+.card.dep { box-shadow: 0 0 0 2px var(--s-needs-decision); }
+.card.dependent { box-shadow: 0 0 0 2px var(--accent); }
+.card.dropped .title { text-decoration: line-through; color: var(--muted); }
+.card .top { display: flex; align-items: center; gap: 6px; }
+.card .id { font-weight: 700; font-size: 12px; }
+.pill { font-size: 10.5px; padding: 0 7px; border-radius: 999px; color: #fff; background: var(--c, var(--s-planned)); margin-left: auto; white-space: nowrap; }
+.card .title { margin: 3px 0 5px; font-size: 12.5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.stages { display: flex; gap: 2px; }
+.stages span { flex: 1; height: 4px; border-radius: 2px; background: var(--line); }
+.stages span.on { background: var(--c); }
+.stage-name { color: var(--muted); font-size: 10.5px; margin-top: 2px; }
+.row { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; margin-top: 5px; }
+.art { font-size: 9.5px; font-weight: 700; width: 17px; height: 17px; border-radius: 4px; display: grid; place-items: center; border: 1px solid var(--line); color: var(--muted); }
+.art.done { background: var(--s-accepted); color: #fff; border-color: transparent; }
+.art.ready { border-color: var(--s-in-progress); color: var(--s-in-progress); }
+.art.blocked { border-style: dashed; }
+.tasks { display: flex; align-items: center; gap: 6px; margin-top: 5px; }
+.tasks .bar { flex: 1; margin: 0; }
+.tasks .bar i { background: var(--c); }
+.small { font-size: 10.5px; color: var(--muted); }
+.tag { font-size: 10.5px; padding: 0 6px; border-radius: 5px; background: var(--panel-2); color: var(--muted); }
+.tag.warn { color: #b45309; background: rgba(217,154,6,.15); }
+.tag.bad { color: #dc2626; background: rgba(220,38,38,.12); }
+.tag.good { color: #15803d; background: rgba(22,163,74,.13); }
+.panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-top: 18px; }
+details.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 11px; padding: 8px 12px; box-shadow: var(--shadow); }
+details.panel summary { cursor: pointer; font-weight: 600; font-size: 12.5px; display: flex; gap: 8px; align-items: center; list-style: none; }
+details.panel summary::-webkit-details-marker { display: none; }
+details.panel summary::before { content: "▸"; color: var(--muted); transition: transform .12s; }
+details.panel[open] summary::before { transform: rotate(90deg); }
+details.panel summary .n { margin-left: auto; color: var(--muted); font-weight: 500; }
+.list { list-style: none; margin: 6px 0 0; padding: 0; max-height: 240px; overflow: auto; }
+.list li { padding: 5px 0; border-top: 1px dashed var(--line); font-size: 12px; }
+.list li:first-child { border-top: 0; }
+.code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: var(--accent); margin-right: 5px; }
+.person { display: flex; gap: 8px; align-items: center; padding: 4px 0; }
+.avatar { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 11px; flex: none; }
+.empty { color: var(--muted); font-size: 12px; font-style: italic; padding-top: 6px; }
+.drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(440px, 100%); background: var(--panel); border-left: 1px solid var(--line);
+  box-shadow: -10px 0 30px rgba(0,0,0,.15); transform: translateX(105%); transition: transform .2s ease; overflow: auto; padding: 18px 18px; z-index: 10; }
+.drawer.open { transform: none; }
+.drawer h2 { margin: 2px 0 6px; font-size: 15px; padding-right: 24px; }
+.drawer .close { position: absolute; right: 12px; top: 10px; border: 0; background: none; color: var(--muted); font-size: 20px; cursor: pointer; }
+.drawer section { margin-top: 12px; }
+.drawer section > b { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.drawer pre { white-space: pre-wrap; font-family: inherit; font-size: 12px; line-height: 1.5; background: var(--panel-2); border-radius: 8px; padding: 8px; margin: 4px 0 0; }
+.drawer table { border-collapse: collapse; width: 100%; font-size: 12px; margin-top: 4px; }
+.drawer td { padding: 3px 5px; border-top: 1px solid var(--line); vertical-align: top; word-break: break-word; }
+.placeholder { padding: 40px 10px; text-align: center; color: var(--muted); }
+footer { color: var(--muted); font-size: 10.5px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<script id="spydell-data" type="application/json">"__SPYDELL_DATA__"</script>
+<div class="wrap">
+  <header>
+    <h1 id="title">Spydell</h1>
+    <div class="meta"><span id="generated"></span><span class="live" id="live"><i></i><span>снимок</span></span></div>
+    <details class="state" id="state"><summary id="state-summary">Состояние</summary><div id="state-body"></div></details>
+  </header>
+  <section class="kpis" id="kpis"></section>
+  <div class="toolbar" id="toolbar"><input id="search" type="search" placeholder="Поиск по срезам…"></div>
+  <main id="main">
+    <div class="layers" id="layers"></div>
+    <div class="panels" id="panels"></div>
+  </main>
+  <footer id="footer"></footer>
+</div>
+<div class="drawer" id="drawer"><button class="close" id="close" aria-label="Закрыть">×</button><div id="drawer-body"></div></div>
+<script>
+(() => {
+  const STATUS = {
+    "planned": "Запланирован", "candidate": "Кандидат", "needs-decision": "Ждёт решения", "ready-for-spec": "Готов к спеке",
+    "specifying": "Спецификация", "ready-for-build": "Готов к реализации", "in-progress": "В работе",
+    "implemented": "Реализован", "accepted": "Принят", "archived": "В архиве", "dropped": "Отменён"
+  };
+  const ORDER = Object.keys(STATUS);
+  const STAGES = ["План", "Спека", "Задачи", "Код", "Приёмка", "Архив"];
+  const GATES = [["proposal", "P", "proposal"], ["specs", "S", "specs"], ["qaPlan", "Q", "qa-plan"], ["design", "D", "design"], ["tasks", "T", "tasks"]];
+  const WAVE = { done: "закрыта", active: "идёт", upcoming: "впереди" };
+  const color = s => `var(--s-${s})`;
+  const el = (tag, attrs = {}, ...kids) => {
+    const node = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === "class") node.className = v; else if (k === "style") node.style.cssText = v;
+      else if (k.startsWith("on")) node.addEventListener(k.slice(2), v); else node.setAttribute(k, v);
+    }
+    for (const kid of kids.flat(Infinity)) if (kid !== null && kid !== undefined && kid !== false)
+      node.append(kid instanceof Node ? kid : document.createTextNode(String(kid)));
+    return node;
+  };
+  const put = (node, ...kids) => node.replaceChildren(...kids.flat(Infinity).filter(k => k !== null && k !== undefined && k !== false)
+    .map(k => k instanceof Node ? k : document.createTextNode(String(k))));
+  function md(text) {
+    const out = [], re = /\[([^\]]+)\]\(([^)\s]+)\)|`([^`]+)`|\*\*([^*]+)\*\*/g;
+    let last = 0, m;
+    text = String(text || "");
+    while ((m = re.exec(text))) {
+      out.push(text.slice(last, m.index));
+      if (m[1] !== undefined) out.push(el("span", { title: m[2] }, md(m[1])));
+      else if (m[3] !== undefined) out.push(el("code", {}, m[3]));
+      else out.push(el("b", {}, m[4]));
+      last = re.lastIndex;
+    }
+    out.push(text.slice(last));
+    return out;
+  }
+  const hidden = new Set();
+  let data = null, query = "", byId = {};
+
+  function load() {
+    try { const raw = JSON.parse(document.getElementById("spydell-data").textContent); return raw && typeof raw === "object" ? raw : null; }
+    catch { return null; }
+  }
+  function ago(iso) {
+    const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+    if (!isFinite(minutes)) return "";
+    if (minutes < 1) return "только что";
+    if (minutes < 60) return `${minutes} мин назад`;
+    const hours = Math.round(minutes / 60);
+    return hours < 48 ? `${hours} ч назад` : `${Math.round(hours / 24)} дн назад`;
+  }
+  const stamp = () => `Обновлено ${ago(data.generated)} · ${new Date(data.generated).toLocaleString("ru-RU")}`;
+  const matches = s => !hidden.has(s.status) && (!query || `${s.id} ${s.title} ${s.planState} ${s.summary}`.toLowerCase().includes(query));
+  const clean = item => md(item.text.replace(item.code, "").replace(/^[\s·|:—-]+/, ""));
+
+  function renderHeader() {
+    document.getElementById("title").textContent = data.initiative || "Spydell";
+    document.title = `${data.initiative || "Spydell"} — дашборд`;
+    document.getElementById("generated").textContent = stamp();
+    const s = data.summary || {};
+    put(document.getElementById("state-summary"), el("b", {}, "Следующий шаг: "), md((s.next || "—").split("\n")[0]));
+    put(document.getElementById("state-body"),
+      el("b", {}, "Состояние"), el("p", {}, md(s.state || "—")),
+      el("b", {}, "Следующий шаг"), el("p", {}, md(s.next || "—")),
+      s.verdict ? [el("b", {}, "Вердикт"), el("p", {}, md(s.verdict))] : null,
+      s.contract ? [el("b", {}, "Контракт прогона"), el("p", {}, md(s.contract))] : null);
+    document.getElementById("footer").textContent =
+      `Формат данных ${data.format} v${data.version} · комплект ${data.set}${data.openspec && data.openspec.cli ? " · OpenSpec CLI" : " · OpenSpec по файлам"}`;
+  }
+
+  function renderKpis() {
+    const k = data.kpis, counts = data.statusCounts || {}, total = k.slices || 1;
+    const kpi = (label, value, sub, bar) => el("div", { class: "kpi" }, el("div", { class: "label" }, label),
+      el("div", { class: "value" }, value), sub ? el("div", { class: "sub" }, sub) : null, bar || null);
+    put(document.getElementById("kpis"),
+      kpi("Срезы", k.slices, `${k.accepted} принято`, el("div", { class: "bar" },
+        ORDER.filter(s => counts[s]).map(s => el("i", { style: `width:${counts[s] / total * 100}%;background:${color(s)}`, title: `${STATUS[s]}: ${counts[s]}` })))),
+      kpi("Волны", `${k.wavesDone}/${k.wavesTotal}`, "закрыто"),
+      kpi("Задачи", k.tasksTotal ? `${k.tasksPct}%` : "—", k.tasksTotal ? `${k.tasksComplete} из ${k.tasksTotal}` : "нет данных",
+        k.tasksTotal ? el("div", { class: "bar" }, el("i", { style: `width:${k.tasksPct}%;background:var(--s-in-progress)` })) : null),
+      kpi("Ждёт решения", k.frontier, "вопросов"),
+      kpi("Решения", k.decisions, "принято"),
+      kpi("Замечания", k.issues, k.issues ? "check.py" : "чисто"));
+  }
+
+  function renderToolbar() {
+    const counts = data.statusCounts || {}, bar = document.getElementById("toolbar");
+    bar.querySelectorAll(".chip").forEach(c => c.remove());
+    ORDER.filter(s => counts[s]).forEach(s => bar.append(el("span", {
+      class: "chip" + (hidden.has(s) ? " off" : ""), onclick: () => { hidden.has(s) ? hidden.delete(s) : hidden.add(s); renderToolbar(); renderLayers(); }
+    }, el("span", { class: "dot", style: `background:${color(s)}` }), STATUS[s], el("span", { class: "n" }, counts[s]))));
+  }
+
+  function card(s) {
+    const t = s.tasks;
+    return el("div", { class: `card ${s.status}`, style: `--c:${color(s.status)}`, "data-id": s.id,
+      onclick: () => openDrawer(s), onmouseenter: () => highlight(s), onmouseleave: () => highlight(null) },
+      el("div", { class: "top" }, el("span", { class: "id" }, s.id), el("span", { class: "pill" }, STATUS[s.status])),
+      el("div", { class: "title", title: s.title }, s.title),
+      s.stage >= 0 ? [el("div", { class: "stages" }, STAGES.map((_, i) => el("span", { class: i <= s.stage ? "on" : "" }))),
+        el("div", { class: "stage-name" }, `Этап: ${STAGES[s.stage]}`)] : null,
+      s.change ? el("div", { class: "row" },
+        s.change.found ? GATES.filter(([k]) => s.gates[k]).map(([k, letter, name]) =>
+          el("span", { class: `art ${s.gates[k]}`, title: `${name}: ${s.gates[k]}` }, letter)) : el("span", { class: "tag warn", title: "change не найден" }, s.change.name),
+        s.acceptance !== "none" ? el("span", { class: `tag ${s.acceptance === "ok" ? "good" : "bad"}` }, s.acceptance === "ok" ? "приёмка ✓" : "приёмка ✗") : null,
+        s.qa ? el("span", { class: `tag ${s.qa.failed || s.qa.blocked ? "bad" : "good"}` }, `QA ${s.qa.passed}✓ ${s.qa.failed}✗ ${s.qa.blocked}⏸`) : null) : null,
+      t ? el("div", { class: "tasks" }, el("div", { class: "bar" }, el("i", { style: `width:${t.pct}%` })), el("span", { class: "small" }, `${t.complete}/${t.total}`)) : null,
+      (s.openDecisions.length || s.deps.length) ? el("div", { class: "row" },
+        s.openDecisions.length ? el("span", { class: "tag warn", title: s.openDecisions.join(", ") }, `решений: ${s.openDecisions.length}`) : null,
+        s.deps.length ? el("span", { class: "small" }, `← ${s.deps.join(", ")}`) : null) : null);
+  }
+
+  function renderLayers() {
+    const root = document.getElementById("layers");
+    if (!data.slices.length) { put(root, el("div", { class: "placeholder" }, "В roadmap нет срезов: таблицы «## Срезы» или заголовков «### <ID> — название».")); return; }
+    put(root, data.waves.map(w => {
+      const visible = w.slices.map(id => byId[id]).filter(matches);
+      return el("section", { class: `layer ${w.status}` },
+        el("div", { class: "layer-head" }, el("h2", {}, w.title), el("span", { class: "sub" }, `${w.closed} из ${w.total} закрыто`),
+          el("span", { class: "badge" }, WAVE[w.status] || w.status)),
+        el("div", { class: "layer-progress" }, el("i", { style: `width:${w.progressPct}%` })),
+        visible.length ? el("div", { class: "grid" }, visible.map(card)) : el("div", { class: "empty" }, "нет срезов под фильтром"));
+    }));
+  }
+
+  function highlight(s) {
+    const cards = document.querySelectorAll(".card");
+    if (!s) { cards.forEach(c => c.classList.remove("dim", "dep", "dependent")); return; }
+    const deps = new Set(s.deps), dependents = new Set(s.dependents);
+    cards.forEach(c => {
+      const id = c.dataset.id;
+      c.classList.toggle("dep", deps.has(id));
+      c.classList.toggle("dependent", dependents.has(id));
+      c.classList.toggle("dim", id !== s.id && !deps.has(id) && !dependents.has(id));
+    });
+  }
+
+  function hue(text) { let h = 0; for (const ch of text) h = (h * 31 + ch.charCodeAt(0)) % 360; return h; }
+  const cell = (row, ...names) => { for (const [k, v] of Object.entries(row)) if (names.some(n => k.includes(n))) return v; return ""; };
+  function panel(title, items, render, empty, open) {
+    return el("details", { class: "panel", ...(open ? { open: "" } : {}) },
+      el("summary", {}, title, el("span", { class: "n" }, items.length)),
+      items.length ? el("ul", { class: "list" }, items.map(i => el("li", {}, render(i)))) : el("div", { class: "empty" }, empty));
+  }
+
+  function renderPanels() {
+    const team = data.team || [], sessions = data.sessions || [], log = [...(data.runLog || [])].reverse();
+    put(document.getElementById("panels"),
+      panel("Ждёт вашего решения", data.frontier, i => [i.code ? el("span", { class: "code" }, i.code) : null, clean(i)], "Открытых вопросов нет", data.frontier.length > 0),
+      log.length ? panel("Лента прогона", log, r => [el("div", { class: "small" }, [cell(r, "время"), cell(r, "волна", "срез")].filter(Boolean).join(" · ")),
+        el("div", {}, cell(r, "что") || Object.values(r).join(" · ")), cell(r, "результат") ? el("span", { class: "tag" }, cell(r, "результат")) : null], "", true) : null,
+      panel("Последние решения", [...(data.recentDecisions || [])].reverse(), i => [i.code ? el("span", { class: "code" }, i.code) : null, clean(i)], "Решений нет", false),
+      panel("Предупреждения", data.issues, i => [el("span", { class: "tag warn" }, i.code), " ", i.message], "Проверки check.py чистые", false),
+      team.length ? panel("Команда", team, p => {
+        const name = cell(p, "имя") || Object.values(p)[0] || "?";
+        return el("div", { class: "person" }, el("div", { class: "avatar", style: `background:hsl(${hue(name)} 55% 50%)` }, name.slice(0, 1).toUpperCase()),
+          el("div", {}, name, el("span", { class: "small" }, ` · ${cell(p, "роль")}`)));
+      }, "", false) : null,
+      sessions.length ? panel("Сессии", sessions, s => Object.values(s).join(" · "), "", false) : null);
+  }
+
+  function openDrawer(s) {
+    const t = s.tasks, ch = s.change;
+    const rows = pairs => el("table", {}, pairs.filter(p => p[1] !== "" && p[1] !== null && p[1] !== undefined)
+      .map(([k, v]) => el("tr", {}, el("td", { class: "small" }, k), el("td", {}, v))));
+    put(document.getElementById("drawer-body"),
+      el("div", { class: "small" }, s.wave === "—" ? "Без волны" : `Волна ${s.wave}`),
+      el("h2", {}, `${s.id} — ${s.title}`),
+      el("span", { class: "pill", style: `--c:${color(s.status)};margin:0` }, STATUS[s.status]),
+      el("section", {}, el("b", {}, "Срез"), rows([["Состояние в roadmap", s.planState], ["Этап", s.stage >= 0 ? STAGES[s.stage] : "—"],
+        ["Зависит от", s.deps.join(", ") || "—"], ["От него зависят", s.dependents.join(", ") || "—"], ["Репозиторий", s.repo],
+        ["Открытые решения", s.openDecisions.join(", ")]])),
+      ch ? el("section", {}, el("b", {}, "OpenSpec change"), rows([["Имя", ch.name], ["Найден", ch.found ? (ch.archived ? "в архиве" : "да") : "нет"],
+        ["Каталог", ch.path], ["Задачи", t ? `${t.complete} из ${t.total} (${t.pct}%)` : ""]]),
+        ch.found ? rows(GATES.filter(([k]) => s.gates[k]).map(([k, , name]) => [name, s.gates[k]])) : null) : null,
+      ch && s.acceptance !== "none" ? el("section", {}, el("b", {}, "Приёмка"), rows([["Проверка", s.acceptance === "ok" ? "чисто" : "есть замечания"]]),
+        ch.acceptanceIssues.length ? el("pre", {}, ch.acceptanceIssues.join("\n")) : null) : null,
+      s.qa ? el("section", {}, el("b", {}, "QA"), rows([["Пройдено", s.qa.passed], ["Не пройдено", s.qa.failed], ["Заблокировано", s.qa.blocked]])) : null,
+      s.summary ? el("section", {}, el("b", {}, "Из roadmap"), el("pre", {}, s.summary)) : null);
+    document.getElementById("drawer").classList.add("open");
+  }
+
+  function render() {
+    byId = Object.fromEntries(data.slices.map(s => [s.id, s]));
+    renderHeader(); renderKpis(); renderToolbar(); renderLayers(); renderPanels();
+  }
+
+  const closeDrawer = () => document.getElementById("drawer").classList.remove("open");
+  document.getElementById("close").onclick = closeDrawer;
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+  document.getElementById("search").addEventListener("input", e => { query = e.target.value.trim().toLowerCase(); renderLayers(); });
+
+  data = load();
+  if (!data) {
+    put(document.getElementById("main"), el("div", { class: "placeholder" },
+      "Нет данных. Запустите: python3 <spydell>/scripts/dashboard.py <каталог комплекта .spydell>"));
+    return;
+  }
+  render();
+  if (location.protocol.startsWith("http")) {
+    const url = location.pathname.replace(/\.html?$/, ".json"), live = document.getElementById("live");
+    live.classList.add("on"); live.querySelector("span").textContent = "живое обновление";
+    setInterval(async () => {
+      try {
+        const fresh = await (await fetch(url, { cache: "no-store" })).json();
+        if (fresh.generated !== data.generated) { data = fresh; render(); }
+        else document.getElementById("generated").textContent = stamp();
+      } catch { /* the JSON file may be mid-write */ }
+    }, 15000);
+  }
+})();
+</script>
+</body>
+</html>
