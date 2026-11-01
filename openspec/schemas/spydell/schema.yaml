@@ -23,7 +23,9 @@ artifacts:
         project's existing spec organization.
         - **Modified Capabilities**: List existing capabilities whose REQUIREMENTS are changing. Only include if
         spec-level behavior changes (not just implementation details). Each needs a delta spec file. Use the exact
-        existing path under `openspec/specs/`. Leave empty if no requirement changes.
+        existing path under `openspec/specs/`. Leave empty if no requirement changes. Behavior the code already
+        has but no spec under `openspec/specs/` describes is a New Capability: archive rejects MODIFIED without
+        a base spec. Say in What Changes which of its requirements pin existing behavior.
       - **Impact**: Affected code, APIs, dependencies, or systems.
 
       IMPORTANT: The Capabilities section is critical. It creates the contract between
@@ -94,6 +96,8 @@ artifacts:
       writing the delta, appending `--store "<id>"` only for a registered standalone store - a mistyped or
       invented path targets a capability that does not exist rather than the one you meant. Do not move or rename
       the capability.
+      - A capability with no base spec, including behavior the code already implements: ADDED only. MODIFIED and
+      RENAMED need a base spec.
 
       Write the spec files one at a time, so the user sees progress and an
       interrupted run keeps the files it already wrote:

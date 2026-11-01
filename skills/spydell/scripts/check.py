@@ -5,16 +5,19 @@ Each subcommand takes one or more paths, for example one per repository of a sli
 
 Subcommands:
   map <map.md>...                       decision codes, required sections, relative links
-  roadmap <roadmap.md>... [--map PATH]  dependency cycles, unknown slices, ready-for-build with open decisions
+  roadmap <roadmap.md>... [--map PATH]  no slices, dependency cycles, unknown slices, ready-for-build with open decisions
   acceptance <acceptance.md>...         required sections, owner and next step for each "Не выполнено" item
   qa <qa-report.md>...                  status of every case, evidence for passed cases
   trace <change-dir>...                 Requirement -> spec-matrix row; scenario names in qa-plan and spec-matrix exist
+  run <set-dir>...                      every launch in run-log.md matches a launch line of the map's «Контракт
+                                        прогона» in all options except brief, model, directory, output and budget
 """
 
 import argparse
 import json
 from pathlib import Path
 import re
+import shlex
 import sys
 
 CODE = re.compile(r"\bR\d+[_.\-:]?Q\d+(?:[_.\-][a-z])?\b")
@@ -184,6 +187,8 @@ def parse_roadmap(text):
 
 def check_roadmap(path, map_path, issues):
     slices = parse_roadmap(path.read_text(encoding="utf-8"))
+    if not slices:
+        issue(issues, "roadmap.empty", "Срезов нет: ни таблицы «Срезы», ни карточек «### <ID> — название»", str(path))
     for name, slice_ in slices.items():
         if slice_.get("duplicate"):
             issue(issues, "roadmap.duplicate", f"Срез {name} записан в таблице «Срезы» дважды", str(path))
@@ -288,10 +293,112 @@ def check_trace(change, issues):
                 issue(issues, "trace.scenario", f"Неизвестный Scenario «{name}»", str(source))
 
 
+CODE_SPAN = re.compile(r"`([^`\n]+)`")
+FENCE = re.compile(r"```[^\n]*\n(.*?)```", re.S)
+LAUNCH_TOOLS = {"claude", "codex", "start_session"}
+MENTION = re.compile(r"(?<![\w.-])(claude|codex|start_session)(?![\w.-])")
+# Options that vary between launches of one contract line; every other option and its values must match exactly.
+# Per tool: `-p` is the brief flag of claude but the settings profile of codex.
+VARIABLE = {"claude": {"-p", "--print", "--model", "--fallback-model", "--output-format", "--max-budget-usd",
+                       "--session-id"},
+            "codex": {"-m", "--model", "-C", "--cd", "-o", "--output-last-message", "--output-schema"},
+            "start_session": {"model", "name", "effort"}}
+SHELL = re.compile(r"\$\(|`|;|&&|\|\||\|")
+VARIABLE_ENV = {"CLAUDE_CODE_TMPDIR"}
+SUBCOMMANDS = {"exec", "e", "review", "resume"}
+
+
+def launch(command):
+    """Return (tool, signature) of a session launch line, or None for any other code.
+
+    The signature holds environment variables, subcommands and every option with all its values, except
+    the VARIABLE ones (brief, model, directory, output, budget). Positional arguments other than subcommands
+    are the brief and are ignored.
+    """
+    try:
+        tokens = shlex.split(command)
+    except ValueError:
+        return None
+    signature = []
+    while tokens and (tokens[0] == "env" or re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", tokens[0])):
+        name, _, value = tokens.pop(0).partition("=")
+        if name != "env" and name not in VARIABLE_ENV:
+            signature.append(("env", name, value))
+    if not tokens or Path(tokens[0]).name not in LAUNCH_TOOLS:
+        return None
+    tool, option, values, rest = Path(tokens[0]).name, None, [], tokens[1:]
+    variable = VARIABLE[tool]
+
+    def flush():
+        if option is not None and option not in variable:
+            signature.append((option, *values))
+
+    index = 0
+    while index < len(rest):
+        token = rest[index]
+        keyed = tool == "start_session" and "=" in token
+        if (token.startswith("-") and len(token) > 1) or keyed:
+            flush()
+            name, has_value, value = token.partition("=") if token.startswith("--") or keyed else (token, "", "")
+            option, values = name, [value] if has_value else []
+            if name in variable and not has_value and index + 1 < len(rest) and not rest[index + 1].startswith("-"):
+                index += 1
+            if name in variable or keyed:
+                flush()
+                option = None
+        elif option is not None:
+            values.append(token)
+        elif token in SUBCOMMANDS and not any(item[0].startswith("-") for item in signature):
+            signature.append(("sub", token))
+        index += 1
+    flush()
+    return tool, tuple(sorted(signature))
+
+
+def check_run(set_dir, issues):
+    log_path, map_path = set_dir / "run-log.md", set_dir / "map.md"
+    if not log_path.exists():
+        issue(issues, "run.log", "Нет run-log.md", str(set_dir))
+        return
+    contract = find_section(sections(map_path.read_text(encoding="utf-8")), "Контракт прогона") if map_path.exists() else None
+    if contract is None:
+        issue(issues, "run.contract", "Журнал прогона есть, а раздела «Контракт прогона» в map.md нет", str(map_path))
+        return
+    lines = [line for block in FENCE.findall(contract) for line in block.splitlines()]
+    allowed = {}
+    for found in filter(None, map(launch, lines + CODE_SPAN.findall(FENCE.sub("", contract)))):
+        allowed.setdefault(found[0], set()).add(found[1])
+    for row in table_rows(log_path.read_text(encoding="utf-8")):
+        if "_mismatch" in row:
+            issue(issues, "run.row", f"Число ячеек не совпадает с заголовком: {row['_mismatch'][:80]}", str(log_path))
+            continue
+        launches = 0
+        for span in CODE_SPAN.findall(" ".join(value for key, value in row.items())):
+            found = launch(span)
+            if found is None:
+                if MENTION.search(span):
+                    issue(issues, "run.unparsed", f"Запуск не распознан — пиши строку как в контракте: {span[:80]}",
+                          str(log_path))
+                continue
+            launches += 1
+            if SHELL.search(span):
+                issue(issues, "run.shell", f"В строке запуска подстановка или цепочка команд оболочки: {span[:80]}",
+                      str(log_path))
+                continue
+            tool, signature = found
+            if tool not in allowed:
+                issue(issues, "run.launch", f"Запуск «{tool}» без строки запуска в контракте: {span[:80]}", str(log_path))
+            elif signature not in allowed[tool]:
+                issue(issues, "run.permissions", f"Флаги запуска расходятся с контрактом: {span[:80]}", str(log_path))
+        if not launches and (column(row, "что") or "").strip().lower().startswith("запуск"):
+            issue(issues, "run.evidence", f"Строка «запуск» без строки запуска кодом: {(column(row, 'что') or '')[:80]}",
+                  str(log_path))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("map", "acceptance", "qa", "trace"):
+    for name in ("map", "acceptance", "qa", "trace", "run"):
         sub.add_parser(name).add_argument("paths", type=Path, nargs="+")
     roadmap = sub.add_parser("roadmap")
     roadmap.add_argument("paths", type=Path, nargs="+")
@@ -309,6 +416,8 @@ def main():
             check_acceptance(path, issues)
         elif args.command == "qa":
             check_qa(path, issues)
+        elif args.command == "run":
+            check_run(path, issues)
         else:
             check_trace(path, issues)
     print(json.dumps({"valid": not issues, "issues": issues}, ensure_ascii=False, indent=2))

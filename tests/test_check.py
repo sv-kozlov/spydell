@@ -91,6 +91,8 @@ class CheckScriptTests(unittest.TestCase):
         self.assertEqual(self.codes(self.check("roadmap", self.write("roadmap.md", broken))), {"roadmap.cycle", "roadmap.ready"})
         duplicate = table.replace("| S2 | next | 2 | candidate | S1 | |", "| S2 | next | 2 | candidate | S1 | |\n| S2 | again | 2 | candidate | | |")
         self.assertEqual(self.codes(self.check("roadmap", self.write("roadmap.md", duplicate))), {"roadmap.duplicate"})
+        foreign = "# Roadmap\n\n## Q1\n- Epic A: login\n- Epic B: billing, depends on A\n"
+        self.assertEqual(self.codes(self.check("roadmap", self.write("roadmap.md", foreign))), {"roadmap.empty"})
 
     def test_acceptance(self):
         good = "".join(f"## {name}\nok\n\n" for name in ["Ревизии", "Тесты", "Ревью по осям", "QA",
@@ -111,6 +113,35 @@ class CheckScriptTests(unittest.TestCase):
         self.assertTrue(self.check("qa", self.write("qa-report.md", escaped))["valid"])
         raw = good.replace("screenshot.png", "https://ci|build.png")
         self.assertEqual(self.codes(self.check("qa", self.write("qa-report.md", raw))), {"qa.row"})
+
+    def test_run(self):
+        claude = ('claude -p "<бриф>" --model <модель> --permission-mode acceptEdits '
+                  '--allowedTools "Edit Bash(git commit:*)" --disallowedTools "Bash(git push:*)"')
+        codex = "codex exec -m <модель> -s workspace-write -C <worktree> -o <ответ> <бриф>"
+        self.write("set/map.md", MAP + "\n## Контракт прогона\n\n```bash\n" + claude + "\n" + codex + "\n```\n\n"
+                   "Desktop: `start_session permission_mode=acceptEdits`.\n")
+        header = "| Время | Волна | Что | Почему | Свидетельство | Результат | Класс модели |\n" + "| --- " * 7 + "|\n"
+        row = "| 10:00 | 1 | запуск волны | бриф | `{}` | ok | лёгкая |\n"
+        actual = "CLAUDE_CODE_TMPDIR=/tmp/w1 " + claude.replace("<бриф>", "волна 1").replace("<модель>", "haiku")
+        good = (header + row.format(actual) + row.format("start_session permission_mode=acceptEdits model=haiku")
+                + row.format("/opt/homebrew/bin/codex exec -m gpt -s workspace-write -C /tmp/w2 -o /tmp/a.md 'волна 2'"))
+        self.write("set/run-log.md", good)
+        self.assertTrue(self.check("run", self.base / "set")["valid"])
+        widened = [actual.replace("acceptEdits", "bypassPermissions"),
+                   actual.replace('"Edit Bash(git commit:*)"', '"Edit Bash(git commit:*)" Bash'),
+                   "env " + actual + " --dangerously-skip-permissions",
+                   "codex exec -m gpt -s workspace-write --ignore-rules -C /tmp/w2 -o /tmp/a.md x",
+                   "codex exec -p unsafe -m gpt -s workspace-write -C /tmp/w2 -o /tmp/a.md x",
+                   "start_session permission_mode=bypassPermissions"]
+        for line in widened:
+            self.write("set/run-log.md", good + row.format(line))
+            self.assertEqual(self.codes(self.check("run", self.base / "set")), {"run.permissions"}, line)
+        substituted = actual.replace('"волна 1"', '"$(claude --dangerously-skip-permissions -p x)"')
+        self.write("set/run-log.md", good + row.format("bash -c 'claude -p x'") + row.format(substituted)
+                   + "| 10:09 | 2 | запуск волны | бриф | вручную | ok | лёгкая |\n")
+        self.assertEqual(self.codes(self.check("run", self.base / "set")), {"run.unparsed", "run.shell", "run.evidence"})
+        self.write("set/map.md", MAP)
+        self.assertEqual(self.codes(self.check("run", self.base / "set")), {"run.contract"})
 
     def test_trace(self):
         change = self.base / "change"
