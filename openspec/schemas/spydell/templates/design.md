@@ -19,7 +19,16 @@
 
 ## Test Seams
 
-<!-- Where each spec behavior is verified. Prefer existing and highest seams; a new seam is agreed with the user before tasks. -->
+<!-- Where each spec behavior is verified. Prefer existing and highest seams; a new seam is agreed with the user before tasks.
+     Classify dependencies: in-process / locally substitutable / remote but owned / foreign external. -->
+
+## Observability
+
+<!-- Production I/O only: 2-4 questions telemetry must answer, structured logs, correlation IDs. Omit otherwise. -->
+
+## Threats
+
+<!-- Untrusted input only: five-minute STRIDE pass and mitigations. Omit otherwise. -->
 
 ## Decisions
 

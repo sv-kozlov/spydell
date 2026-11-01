@@ -237,7 +237,14 @@ artifacts:
       at all; already in this codebase; a platform or standard-library feature; an installed dependency; a rule or
       setting instead of code. New code or a new dependency states why each rung above did not fit.
       - **Test Seams**: Where each spec behavior is verified. Prefer existing seams and the highest one possible;
-      the fewer seams the better. A new seam is agreed with the user before tasks.
+      the fewer seams the better. A new seam is agreed with the user before tasks. Classify each dependency at a
+      seam - in-process, locally substitutable, remote but owned, foreign external - since that decides the adapter
+      and how it is tested.
+      - **Observability** (changes with production I/O): 2-4 questions the telemetry must answer, structured logs,
+      correlation IDs.
+      - **Threats** (changes handling untrusted input): a five-minute STRIDE pass - spoofing, tampering,
+      repudiation, information disclosure, denial of service, elevation of privilege - and the mitigation for each
+      that applies.
       - **Decisions**: Key technical choices with rationale (why X over Y?). Include alternatives considered for
       each decision. A decision that crosses module boundaries or contracts compares at least two structurally
       different candidates; a deliberately weak alternative does not count.
