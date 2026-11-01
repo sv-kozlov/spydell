@@ -75,6 +75,14 @@ class WatchScriptTests(unittest.TestCase):
         code, report = self.watch("--worktree", str(repo), "--stuck-after", "0.02", "--max-runtime", "0.03")
         self.assertEqual((code, report["event"]), (3, "restart"))
 
+    def test_pulse_keeps_a_long_check_alive(self):
+        repo = self.repo("repo")
+        git_dir = Path(subprocess.run(["git", "-C", str(repo), "rev-parse", "--absolute-git-dir"],
+                                      capture_output=True, text=True).stdout.strip())
+        self.keep_editing(git_dir / "spydell-pulse")  # only the pulse moves; the working tree stays clean
+        code, report = self.watch("--worktree", str(repo), "--stuck-after", "0.02", "--max-runtime", "0.03")
+        self.assertEqual((code, report["event"]), (3, "restart"))
+
     def test_stuck_worktree_among_active(self):
         active, idle = self.repo("active"), self.repo("idle")
         self.keep_editing(active / "file.txt")

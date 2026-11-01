@@ -6,7 +6,8 @@ which reads the event, acts and starts the watcher again.
 
   python3 watch.py <set-dir> [--worktree PATH]... [--stuck-after MIN] [--max-runtime MIN] [--interval SEC]
 
-Sources of activity: each --worktree (HEAD, status, staged and unstaged diff, untracked files' size and mtime),
+Sources of activity: each --worktree (HEAD, status, staged and unstaged diff, untracked files' size and mtime, and
+the pulse file <git-dir>/spydell-pulse that a long check touches while it runs),
 or run-log.md when no worktree is given. Each source has its own idle timer, kept in a state file in the system
 temporary directory (one per set), so a restart does not reset it.
 Exit codes:
@@ -40,7 +41,10 @@ def fingerprint(path):
     for name in filter(None, run("ls-files", "-z", "--others", "--exclude-standard").split("\0")):
         stat = (path / name).stat() if (path / name).exists() else None
         untracked.append(f"{name}:{stat and (stat.st_mtime_ns, stat.st_size)}")
-    parts = [run("rev-parse", "HEAD"), run("status", "--porcelain"), run("diff"), run("diff", "--cached"), *untracked]
+    pulse = Path(run("rev-parse", "--absolute-git-dir").strip() or path) / "spydell-pulse"
+    pulse_mark = str(pulse.stat().st_mtime_ns) if pulse.exists() else ""
+    parts = [run("rev-parse", "HEAD"), run("status", "--porcelain"), run("diff"), run("diff", "--cached"), *untracked,
+             pulse_mark]
     return hashlib.sha256("\n".join(parts).encode()).hexdigest()
 
 
