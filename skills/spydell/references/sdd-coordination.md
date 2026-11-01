@@ -68,7 +68,8 @@ specs, сразу задай пользователю, не заменяя до�
 
 Перед apply пакет проверяет независимый `spydell-spec-review`; после правок — новый reviewer, сначала самостоятельно,
 затем по прежним findings; каждый раунд добавляет несверенные источники (код интегрируемой службы, SDK, legacy, данные).
-Готово, когда раунд не находит подтверждённых замечаний. Затем программа: `openspec status --change <имя> --json`
+Готово, когда раунд не находит подтверждённых замечаний; число раундов — по схождению раундов
+([wave-review.md](wave-review.md), «Политика ворот»). Затем программа: `openspec status --change <имя> --json`
 (артефакты apply в `done`) и `openspec validate <имя> --strict --json` — в каждом корне OpenSpec среза, для общего store
 с `--store <id>`; на полном маршруте ещё `python3 <spydell>/scripts/check.py map <map.md>` и
 `python3 <spydell>/scripts/check.py roadmap <roadmap.md>` ([check.py](../scripts/check.py)).
