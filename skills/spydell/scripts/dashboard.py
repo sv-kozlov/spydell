@@ -178,7 +178,8 @@ def slice_record(slice_, change, open_codes, dependents):
     record = {
         "id": slice_["id"], "title": slice_["title"], "wave": slice_["wave"] or "—", "status": status,
         "stage": STAGE[status], "planState": slice_["state"], "deps": slice_["deps"], "dependents": dependents,
-        "repo": slice_["repo"], "openDecisions": sorted(open_codes & set(check.CODE.findall(body))),
+        "repo": slice_["repo"], "execution": slice_["execution"], "parallel": slice_["parallel"],
+        "openDecisions": sorted(open_codes & set(check.CODE.findall(body))),
         "summary": first_lines("\n".join(line for line in slice_["body"] if " | " not in line), 600),
         "tasks": {**tasks, "pct": pct(tasks["complete"], tasks["total"])} if tasks else None,
         "gates": {key: (change["artifacts"].get(name, "") if change else "") for key, name in GATES},

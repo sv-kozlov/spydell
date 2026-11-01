@@ -319,17 +319,23 @@ artifacts:
         whose work calls for neither, such as scaffolding or dependency setup,
         carries neither. A final group is for integration checks only, not for
         the tests and docs an earlier group owed.
+      - End each task group heading with an execution hint for whoever runs it:
+        `— <class>/<effort>, group <letter>`, where class is strong, medium or light
+        (сильная, средняя, лёгкая) and effort is low, medium, high or max (низкий, средний,
+        высокий, максимальный). Groups with the same letter share no files, contracts or
+        migrations and may run in parallel; a group that builds on another gets a later letter.
+        Name a class and effort, never a model: the environment maps them to a model.
 
       Example:
       ```
       # Tasks
 
-      ## 1. Setup
+      ## 1. Setup — лёгкая/низкий, group A
 
       - [ ] 1.1 Create new module structure and verify expected files are present
       - [ ] 1.2 Add dependencies to package.json and verify package installation succeeds
 
-      ## 2. Core Implementation
+      ## 2. Core Implementation — средняя/средний, group B
 
       - [ ] 2.1 Implement data export function and verify the export test passes
       - [ ] 2.2 Add CSV formatting utilities and verify unit tests cover quoting and delimiters

@@ -1,14 +1,15 @@
 # Tasks
 
 <!-- Each implementation group links to scenarios/dependencies and includes its own tests and docs.
-     Every task states its completion evidence. Adapt numbering and scope; do not retain placeholder tasks. -->
+     Every task states its completion evidence. Adapt numbering and scope; do not retain placeholder tasks.
+     Each group heading ends with an execution hint: — <class>/<effort>, group <letter>; same letter = may run in parallel. -->
 
-## 1. <!-- Task Group Name -->
+## 1. <!-- Task Group Name --> — <!-- class/effort -->, group A
 
 - [ ] 1.1 <!-- Task description -->
 - [ ] 1.2 <!-- Task description -->
 
-## 2. <!-- Task Group Name -->
+## 2. <!-- Task Group Name --> — <!-- class/effort -->, group B
 
 - [ ] 2.1 <!-- Task description -->
 - [ ] 2.2 <!-- Task description -->

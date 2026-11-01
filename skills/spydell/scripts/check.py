@@ -5,12 +5,14 @@ Each subcommand takes one or more paths, for example one per repository of a sli
 
 Subcommands:
   map <map.md>...                       decision codes, required sections, relative links
-  roadmap <roadmap.md>... [--map PATH]  no slices, dependency cycles, unknown slices, ready-for-build with open decisions
+  roadmap <roadmap.md>... [--map PATH]  no slices, dependency cycles, unknown slices, ready-for-build with open decisions,
+                                        «Исполнение» as <class>/<effort>, «Параллельно с» within the wave and not a predecessor
   acceptance <acceptance.md>...         required sections, owner and next step for each "Не выполнено" item
   qa <qa-report.md>...                  status of every case, evidence for passed cases
   trace <change-dir>...                 Requirement -> spec-matrix row; scenario names in qa-plan and spec-matrix exist
   run <set-dir>...                      every launch in run-log.md matches a launch line of the map's «Контракт
-                                        прогона» in all options except brief, model, directory, output and budget
+                                        прогона» in all options except brief, model, effort, directory, output and
+                                        budget; launch tools are claude, codex, start_session and those in ../models.md
 """
 
 import argparse
@@ -28,6 +30,8 @@ MAP_SECTIONS = ["Назначение", "Состояние", "Принятые 
 ACCEPTANCE_SECTIONS = ["Ревизии", "Тесты", "Ревью", "QA", "Повторившиеся классы", "Не выполнено"]
 STATUSES = {"пройден", "не пройден", "заблокирован"}
 READY = "ready-for-build"
+CLASSES = {"сильная", "средняя", "лёгкая", "легкая"}
+EFFORTS = {"низкий", "средний", "высокий", "максимальный"}
 
 
 def issue(issues, code, message, location=""):
@@ -125,7 +129,7 @@ def parse_roadmap(text):
 
     def blank(ident):
         return {"id": ident, "title": "", "wave": "", "state": "", "deps": [], "change": "", "repo": "",
-                "body": [], "heading": ""}
+                "execution": "", "parallel": [], "body": [], "heading": ""}
 
     for line in text.splitlines():
         match = HEADING.match(line)
@@ -157,6 +161,10 @@ def parse_roadmap(text):
             current["change"] = (re.findall(r"`([^`]+)`", value) or value.split() or [""])[0].strip("`")
         elif label in ("репозиторий", "repo"):
             current["repo"] = value.strip(" `")
+        elif label == "исполнение":
+            current["execution"] = value.strip(" `")
+        elif label == "параллельно с":
+            current["parallel"] += split_ids(value)
     table = find_section(sections(text), "Срезы") or ""
     ordered = {}
     for row in table_rows(table):
@@ -173,6 +181,11 @@ def parse_roadmap(text):
         slice_["deps"] = split_ids(column(row, "предшеств", "зависит")) or slice_["deps"]
         slice_["change"] = (column(row, "change") or slice_["change"]).strip(" `")
         slice_["repo"] = (column(row, "репозитор") or slice_["repo"]).strip(" `")
+        execution, parallel = column(row, "исполнение"), column(row, "параллельно")
+        if execution is not None:
+            slice_["execution"] = "" if execution.strip(" `").lower() in NO_DEPS else execution.strip(" `")
+        if parallel is not None:
+            slice_["parallel"] = split_ids(parallel)
         slice_["body"] = slice_["body"] + [" | ".join(value for key, value in row.items() if key != "_mismatch")]
         ordered[ident] = slice_
     for ident, slice_ in slices.items():
@@ -187,6 +200,15 @@ def parse_roadmap(text):
 
 def check_roadmap(path, map_path, issues):
     slices = parse_roadmap(path.read_text(encoding="utf-8"))
+
+    def ancestors(name, seen=None):
+        seen = set() if seen is None else seen
+        for dep in slices.get(name, {}).get("deps", []):
+            if dep not in seen:
+                seen.add(dep)
+                ancestors(dep, seen)
+        return seen
+
     if not slices:
         issue(issues, "roadmap.empty", "Срезов нет: ни таблицы «Срезы», ни карточек «### <ID> — название»", str(path))
     for name, slice_ in slices.items():
@@ -195,6 +217,24 @@ def check_roadmap(path, map_path, issues):
         for dep in slice_["deps"]:
             if dep not in slices:
                 issue(issues, "roadmap.unknown", f"{name} зависит от неизвестного среза {dep}", str(path))
+        if slice_["execution"]:
+            parts = [part.strip().lower() for part in slice_["execution"].split("/")]
+            if len(parts) != 2 or parts[0] not in CLASSES or parts[1] not in EFFORTS:
+                issue(issues, "roadmap.execution",
+                      f"{name}: «Исполнение: {slice_['execution']}» — нужно <класс>/<effort>: "
+                      "сильная|средняя|лёгкая / низкий|средний|высокий|максимальный", str(path))
+        for other in slice_["parallel"]:
+            peer = slices.get(other)
+            if peer is None:
+                issue(issues, "roadmap.parallel", f"{name} параллелен неизвестному срезу {other}", str(path))
+            elif other == name:
+                issue(issues, "roadmap.parallel", f"{name} указан параллельным самому себе", str(path))
+            elif other in ancestors(name) or name in ancestors(other):
+                issue(issues, "roadmap.parallel", f"{name} и {other} связаны цепочкой «предшественник» и не могут идти параллельно",
+                      str(path))
+            elif peer["wave"] != slice_["wave"]:
+                issue(issues, "roadmap.parallel", f"{name} (волна {slice_['wave']}) параллелен {other} из волны {peer['wave']}",
+                      str(path))
     state, stack = {}, []
 
     def visit(name):
@@ -296,19 +336,43 @@ def check_trace(change, issues):
 CODE_SPAN = re.compile(r"`([^`\n]+)`")
 FENCE = re.compile(r"```[^\n]*\n(.*?)```", re.S)
 LAUNCH_TOOLS = {"claude", "codex", "start_session"}
-MENTION = re.compile(r"(?<![\w.-])(claude|codex|start_session)(?![\w.-])")
 # Options that vary between launches of one contract line; every other option and its values must match exactly.
 # Per tool: `-p` is the brief flag of claude but the settings profile of codex.
-VARIABLE = {"claude": {"-p", "--print", "--model", "--fallback-model", "--output-format", "--max-budget-usd",
+VARIABLE = {"claude": {"-p", "--print", "--model", "--fallback-model", "--effort", "--output-format", "--max-budget-usd",
                        "--session-id"},
             "codex": {"-m", "--model", "-C", "--cd", "-o", "--output-last-message", "--output-schema"},
             "start_session": {"model", "name", "effort"}}
-SHELL = re.compile(r"\$\(|`|;|&&|\|\||\|")
+# Tools found only in the project's models.md: model and effort vary, every other option must match.
+GENERIC_VARIABLE = {"-m", "--model", "--effort"}
+VARIABLE_CONFIG = re.compile(r"^model_reasoning_effort=")  # codex -c value that carries effort
+BRIEF = {"<бриф>", "<brief>", "<prompt>"}  # brief placeholder; must not land in an option's values
+WRAPPERS = {"npx", "uvx", "pipx", "bunx", "pnpm", "yarn", "node", "python", "python3"}  # the package names the tool
+SHELL = re.compile(r"\$[({]|`|\\\n")
 VARIABLE_ENV = {"CLAUDE_CODE_TMPDIR"}
 SUBCOMMANDS = {"exec", "e", "review", "resume"}
 
 
-def launch(command):
+def shell_operators(command):
+    """True when the line holds shell operators or substitutions that could run a second command."""
+    if SHELL.search(command):
+        return True
+    lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
+    lexer.whitespace_split = True
+    try:
+        return any(token and set(token) <= set("();<>|&") for token in lexer)
+    except ValueError:
+        return True
+
+
+def first_word(command):
+    try:
+        words = [word for word in shlex.split(command) if word != "env" and not re.match(r"^[A-Za-z_]\w*=", word)]
+    except ValueError:
+        return ""
+    return Path(words[0]).name if words and not words[0].startswith("-") else ""
+
+
+def launch(command, tools=frozenset(LAUNCH_TOOLS)):
     """Return (tool, signature) of a session launch line, or None for any other code.
 
     The signature holds environment variables, subcommands and every option with all its values, except
@@ -324,14 +388,22 @@ def launch(command):
         name, _, value = tokens.pop(0).partition("=")
         if name != "env" and name not in VARIABLE_ENV:
             signature.append(("env", name, value))
-    if not tokens or Path(tokens[0]).name not in LAUNCH_TOOLS:
+    if not tokens or Path(tokens[0]).name not in tools:
         return None
     tool, option, values, rest = Path(tokens[0]).name, None, [], tokens[1:]
-    variable = VARIABLE[tool]
+    if tool in WRAPPERS:
+        package = next((index for index, token in enumerate(rest) if not token.startswith("-")), None)
+        if package is None:
+            return None
+        tool, rest = f"{tool} {rest[package]}", rest[:package] + rest[package + 1:]
+    variable = VARIABLE.get(tool.split()[0], GENERIC_VARIABLE)
 
     def flush():
-        if option is not None and option not in variable:
-            signature.append((option, *values))
+        if option is None or option in variable:
+            return
+        if option in ("-c", "--config") and values and VARIABLE_CONFIG.match(values[0]):
+            return
+        signature.append((option, *values))
 
     index = 0
     while index < len(rest):
@@ -352,7 +424,7 @@ def launch(command):
             signature.append(("sub", token))
         index += 1
     flush()
-    return tool, tuple(sorted(signature))
+    return tool, tuple(signature)
 
 
 def check_run(set_dir, issues):
@@ -364,9 +436,24 @@ def check_run(set_dir, issues):
     if contract is None:
         issue(issues, "run.contract", "Журнал прогона есть, а раздела «Контракт прогона» в map.md нет", str(map_path))
         return
+    tools = set(LAUNCH_TOOLS)
+    models = set_dir.parent / "models.md"
+    if models.exists():
+        for row in table_rows(models.read_text(encoding="utf-8")):
+            tools.update(filter(None, map(first_word, CODE_SPAN.findall(column(row, "запуск") or ""))))
+    fenced = [line for block in FENCE.findall(contract) for line in block.splitlines() if line.strip()]
+    tools.update(filter(None, map(first_word, fenced)))  # a contract code block holds launch lines only
+    mention = re.compile(r"(?<![\w.-])(" + "|".join(map(re.escape, sorted(tools))) + r")(?![\w.-])")
     lines = [line for block in FENCE.findall(contract) for line in block.splitlines()]
     allowed = {}
-    for found in filter(None, map(launch, lines + CODE_SPAN.findall(FENCE.sub("", contract)))):
+    for line in lines + CODE_SPAN.findall(FENCE.sub("", contract)):
+        found = launch(line, tools)
+        if found is None:
+            continue
+        if any(value in BRIEF for item in found[1] for value in item[1:]):
+            issue(issues, "run.brief", f"В строке контракта бриф стоит за флагом со значениями — поставь его сразу "
+                  f"за флагом брифа или модели либо перед флагами: {line[:80]}", str(map_path))
+            continue
         allowed.setdefault(found[0], set()).add(found[1])
     for row in table_rows(log_path.read_text(encoding="utf-8")):
         if "_mismatch" in row:
@@ -374,14 +461,14 @@ def check_run(set_dir, issues):
             continue
         launches = 0
         for span in CODE_SPAN.findall(" ".join(value for key, value in row.items())):
-            found = launch(span)
+            found = launch(span, tools)
             if found is None:
-                if MENTION.search(span):
+                if mention.search(span):
                     issue(issues, "run.unparsed", f"Запуск не распознан — пиши строку как в контракте: {span[:80]}",
                           str(log_path))
                 continue
             launches += 1
-            if SHELL.search(span):
+            if shell_operators(span):
                 issue(issues, "run.shell", f"В строке запуска подстановка или цепочка команд оболочки: {span[:80]}",
                       str(log_path))
                 continue

@@ -306,6 +306,7 @@ footer { color: var(--muted); font-size: 10.5px; margin-top: 16px; }
       el("span", { class: "pill", style: `--c:${color(s.status)};margin:0` }, STATUS[s.status]),
       el("section", {}, el("b", {}, "Срез"), rows([["Состояние в roadmap", s.planState], ["Этап", s.stage >= 0 ? STAGES[s.stage] : "—"],
         ["Зависит от", s.deps.join(", ") || "—"], ["От него зависят", s.dependents.join(", ") || "—"], ["Репозиторий", s.repo],
+        ["Исполнение", s.execution || ""], ["Параллельно с", (s.parallel || []).join(", ")],
         ["Открытые решения", s.openDecisions.join(", ")]])),
       ch ? el("section", {}, el("b", {}, "OpenSpec change"), rows([["Имя", ch.name], ["Найден", ch.found ? (ch.archived ? "в архиве" : "да") : "нет"],
         ["Каталог", ch.path], ["Задачи", t ? `${t.complete} из ${t.total} (${t.pct}%)` : ""]]),

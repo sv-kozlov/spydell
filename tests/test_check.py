@@ -91,6 +91,19 @@ class CheckScriptTests(unittest.TestCase):
         self.assertEqual(self.codes(self.check("roadmap", self.write("roadmap.md", broken))), {"roadmap.cycle", "roadmap.ready"})
         duplicate = table.replace("| S2 | next | 2 | candidate | S1 | |", "| S2 | next | 2 | candidate | S1 | |\n| S2 | again | 2 | candidate | | |")
         self.assertEqual(self.codes(self.check("roadmap", self.write("roadmap.md", duplicate))), {"roadmap.duplicate"})
+        planned = (table.replace("| Change |", "| Change | Исполнение | Параллельно с |").replace("| --- |\n| S1", "| --- | --- | --- |\n| S1")
+                   .replace("| `s1` |", "| `s1` | средняя/высокий | S3 |").replace("| S2 | next | 2 | candidate | S1 | |", "| S2 | next | 2 | candidate | S1 | | | |")
+                   + "\n### S3 — side\nВолна: 1\nИсполнение: лёгкая/низкий\nПараллельно с: S1\n")
+        self.assertTrue(self.check("roadmap", self.write("roadmap.md", planned))["valid"])
+        wrong = planned.replace("лёгкая/низкий", "opus/high").replace("Параллельно с: S1", "Параллельно с: S2, S9, S3")
+        self.assertEqual(self.codes(self.check("roadmap", self.write("roadmap.md", wrong))),
+                         {"roadmap.execution", "roadmap.parallel"})
+        chain = ("### S1 — a\nВолна: 1\nПараллельно с: S3\n### S2 — b\nВолна: 1\nПредшественник: S1\n"
+                 "### S3 — c\nВолна: 1\nПредшественник: S2\n")
+        self.assertEqual(self.codes(self.check("roadmap", self.write("roadmap.md", chain))), {"roadmap.parallel"})
+        cleared = ("## Срезы\n\n| ID | Срез | Волна | Параллельно с |\n| --- | --- | --- | --- |\n| S1 | a | 1 | — |\n\n"
+                   "### S1 — a\nПараллельно с: S9\n")
+        self.assertTrue(self.check("roadmap", self.write("roadmap.md", cleared))["valid"])
         foreign = "# Roadmap\n\n## Q1\n- Epic A: login\n- Epic B: billing, depends on A\n"
         self.assertEqual(self.codes(self.check("roadmap", self.write("roadmap.md", foreign))), {"roadmap.empty"})
 
@@ -125,8 +138,10 @@ class CheckScriptTests(unittest.TestCase):
         actual = "CLAUDE_CODE_TMPDIR=/tmp/w1 " + claude.replace("<бриф>", "волна 1").replace("<модель>", "haiku")
         good = (header + row.format(actual) + row.format("start_session permission_mode=acceptEdits model=haiku")
                 + row.format("/opt/homebrew/bin/codex exec -m gpt -s workspace-write -C /tmp/w2 -o /tmp/a.md 'волна 2'"))
-        self.write("set/run-log.md", good)
+        self.write("set/run-log.md", good + row.format(actual + " --effort high")
+                   + row.format("codex exec -m gpt -s workspace-write -c model_reasoning_effort=low -C /tmp/w2 -o /tmp/a.md x"))
         self.assertTrue(self.check("run", self.base / "set")["valid"])
+        self.write("set/run-log.md", good)
         widened = [actual.replace("acceptEdits", "bypassPermissions"),
                    actual.replace('"Edit Bash(git commit:*)"', '"Edit Bash(git commit:*)" Bash'),
                    "env " + actual + " --dangerously-skip-permissions",
@@ -140,6 +155,42 @@ class CheckScriptTests(unittest.TestCase):
         self.write("set/run-log.md", good + row.format("bash -c 'claude -p x'") + row.format(substituted)
                    + "| 10:09 | 2 | запуск волны | бриф | вручную | ok | лёгкая |\n")
         self.assertEqual(self.codes(self.check("run", self.base / "set")), {"run.unparsed", "run.shell", "run.evidence"})
+        other = "other-agent --sandbox workspace-write --model <модель> <бриф>"
+        self.write("models.md", "| Модель | Среда и запуск | Класс |\n| --- | --- | --- |\n"
+                   f"| local | `{other}` | средняя |\n| big | `claude -p` | сильная |\n")
+        self.write("set/map.md", MAP + "\n## Контракт прогона\n\n```bash\n" + claude + "\n" + other + "\n```\n")
+        launched = row.format("other-agent --sandbox workspace-write --model q 'волна 3'")
+        self.write("set/run-log.md", good.split("| 10:00")[0] + launched)
+        self.assertTrue(self.check("run", self.base / "set")["valid"])
+        self.write("set/run-log.md", good.split("| 10:00")[0] + launched.replace("workspace-write", "danger-full-access"))
+        self.assertEqual(self.codes(self.check("run", self.base / "set")), {"run.permissions"})
+        hidden = launched.replace("` | ok", "` `bash -c 'other-agent --sandbox danger-full-access x'` | ok")
+        self.write("set/run-log.md", good.split("| 10:00")[0] + hidden)
+        self.assertEqual(self.codes(self.check("run", self.base / "set")), {"run.unparsed"})
+        npx = "npx -y @google/gemini-cli --sandbox --model <модель> <бриф>"
+        self.write("models.md", f"| Модель | Среда и запуск | Класс |\n| --- | --- | --- |\n| g | `{npx}` | средняя |\n")
+        self.write("set/map.md", MAP + "\n## Контракт прогона\n\n```bash\n" + npx + "\n```\n")
+        self.write("set/run-log.md", good.split("| 10:00")[0] + row.format("npx -y @google/gemini-cli --sandbox --model g 'в'"))
+        self.assertTrue(self.check("run", self.base / "set")["valid"])
+        self.write("set/run-log.md", good.split("| 10:00")[0] + row.format("npx -y attacker-package --sandbox --model g 'в'"))
+        self.assertEqual(self.codes(self.check("run", self.base / "set")), {"run.launch"})
+        glued = 'claude -p x --permission-mode acceptEdits --allowedTools Read "<бриф>"'
+        self.write("set/map.md", MAP + "\n## Контракт прогона\n\n```bash\n" + glued + "\n```\n")
+        self.write("set/run-log.md", good.split("| 10:00")[0])
+        self.assertEqual(self.codes(self.check("run", self.base / "set")), {"run.brief"})
+        self.write("models.md", "")
+        self.write("set/map.md", MAP + "\n## Контракт прогона\n\n```bash\n" + claude + "\n"
+                   + "codex exec -m <модель> -c sandbox_mode=danger-full-access -c sandbox_mode=workspace-write\n"
+                   + '"/opt/homebrew/bin/gemini" --sandbox --model <модель> <бриф>\n```\n')
+        bypasses = [actual + ' & eval "claude --dangerously-skip-permissions -p x"',
+                    actual + ' > >(eval x)',
+                    "codex exec -m g -c sandbox_mode=workspace-write -c sandbox_mode=danger-full-access"]
+        for line in bypasses:
+            self.write("set/run-log.md", good.split("| 10:00")[0] + row.format(line))
+            self.assertFalse(self.check("run", self.base / "set")["valid"], line)
+        self.write("set/run-log.md", good.split("| 10:00")[0]
+                   + row.format("bash -c 'gemini --yolo -p x'"))
+        self.assertEqual(self.codes(self.check("run", self.base / "set")), {"run.unparsed", "run.evidence"})
         self.write("set/map.md", MAP)
         self.assertEqual(self.codes(self.check("run", self.base / "set")), {"run.contract"})
 

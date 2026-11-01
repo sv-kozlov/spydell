@@ -15,7 +15,9 @@
   и стратегии тестирования, позже — регрессия по diff.
 - [design](../openspec/schemas/spydell/templates/design.md): существующие механизмы, тестовые швы,
   решения с кандидатами и условия интеграции.
-- [tasks](../openspec/schemas/spydell/templates/tasks.md): реализация, тесты на швах, пометки `shortcut:`
+- [tasks](../openspec/schemas/spydell/templates/tasks.md): реализация, тесты на швах, пометки `shortcut:`,
+  подсказка исполнения в заголовке группы — `— <класс>/<effort>, group <буква>`; одна буква — группы можно вести
+  параллельно
   и свидетельства завершения волны.
 
 Схема получена из `spec-driven` пакета `@fission-ai/openspec` 1.14.1 через `openspec schema fork`.
