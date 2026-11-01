@@ -228,8 +228,11 @@ artifacts:
     instruction: |
       Create the design document that explains HOW to implement the change.
 
-      Create a concise design for every slice after all applicable specs are ready.
-      For a simple change, reference the existing mechanism without inventing architectural choices.
+      Write the design after all applicable specs are ready. A full design is needed only when the slice
+      touches a module boundary, data or migrations, concurrency, an external contract, a new dependency, or
+      a choice between structurally different options. Otherwise design.md is one line —
+      "No design needed: <reason>, existing mechanism: <reference>" — and nothing else; do not invent
+      architectural choices for a simple change.
       Document unresolved material trade-offs before implementation.
 
       Sections:
@@ -319,6 +322,11 @@ artifacts:
         whose work calls for neither, such as scaffolding or dependency setup,
         carries neither. A final group is for integration checks only, not for
         the tests and docs an earlier group owed.
+      - The "Integrated Wave Acceptance" group from the template belongs to the change that closes a wave;
+        in a multi-change wave keep it only in the coordinator change and link the same acceptance report from the
+        others. A single-capability change that closes no wave keeps only: integrated checks with independent code
+        review; user QA execution if qa-plan has user-interaction cases; independent spec review only if the
+        proposal flags notable risk. Drop the remaining acceptance tasks instead of ticking them unperformed.
       - End each task group heading with an execution hint for whoever runs it:
         `— <class>/<effort>, group <letter>`, where class is strong, medium or light
         (сильная, средняя, лёгкая) and effort is low, medium, high or max (низкий, средний,

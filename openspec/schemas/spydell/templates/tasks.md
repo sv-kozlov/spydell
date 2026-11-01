@@ -16,8 +16,10 @@
 
 ## 3. Integrated Wave Acceptance
 
-<!-- For multi-change waves, name one coordinator and link the same acceptance report from every change.
-     Individual change completion does not close the wave before the integrated checks succeed. -->
+<!-- Keep this group in the change that closes a wave; for multi-change waves, in one coordinator change, with the
+     same acceptance report linked from every change. A single-capability change that closes no wave keeps only 3.1,
+     3.3 when qa-plan has user-interaction cases, and 3.5 when the proposal flags notable risk — drop the rest,
+     never tick a step that was not performed. Individual change completion does not close the wave. -->
 
 - [ ] 3.1 Run integrated checks and independent code review; fix findings and record the verified revision.
 - [ ] 3.2 Extend acceptance/qa-plan.md with regression cases from the actual diff, or keep its non-applicability line.
