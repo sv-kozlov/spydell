@@ -258,6 +258,9 @@ artifacts:
       the task breakdown, resolve it now - ask the user instead of guessing.
 
       Visual decisions do not belong here: reference DESIGN.md and the approved mockups.
+      Add a Mermaid diagram where it saves reading - C4 containers or components, sequence diagrams for
+      interactions and integrations, state diagrams for lifecycles, ER for the data model. One question per
+      diagram; it adds no facts the text lacks. Use PlantUML or another notation only if the project already does.
       Focus on architecture and approach, not line-by-line implementation.
       The proposal covers why and what; design covers how. Reference the
       proposal for motivation and, once written, the specs for requirements -

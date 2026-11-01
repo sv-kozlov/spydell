@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spydell Unslop"
+  short_description: "Чистка текстов для людей от машинного письма"
+  default_prompt: "Используй $spydell-unslop, чтобы вычистить текст для людей от примет машинного письма и канцелярита."

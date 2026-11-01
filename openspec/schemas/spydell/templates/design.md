@@ -2,6 +2,8 @@
 
 ## Context
 
+<!-- Optional Mermaid diagram (C4, sequence, state, ER) where it saves reading; it adds no facts the text lacks. -->
+
 <!-- Current state and constraints that shape the approach. See proposal.md for motivation - don't restate it -->
 
 ## Goals / Non-Goals

@@ -109,6 +109,8 @@ OpenSpec change / capabilities (ADDED или MODIFIED) / актуальная р
 из `openspec list --specs` или новое имя) → ADDED или MODIFIED → change → волна. Specs в OpenSpec живут по capability:
 два change одной волны, которые меняют одну capability, дают пересекающиеся MODIFIED. Упорядочи их, объедини
 или выдели общую предпосылку. Имя capability — устойчивое поведение системы, а не работа в срезе.
+Граф зависимостей срезов и волн и карту capabilities удобно показать диаграммой
+([planning-methods.md](../spydell/references/planning-methods.md), «Диаграммы»); Gantt с датами не рисуй.
 
 ## Стратегия тестирования
 
