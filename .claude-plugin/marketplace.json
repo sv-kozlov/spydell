@@ -12,7 +12,7 @@
     {
       "name": "spydell",
       "source": "./",
-      "description": "Восемь навыков Spydell: прояснение замысла, roadmap, spec-review, критик, оценщик, системный анализ, ИИ-агенты и ТРИЗ.",
+      "description": "Навыки Spydell: прояснение замысла, опрос, roadmap, spec-review, QA, чистка текстов, ретро, критик, оценщик, системный анализ, ИИ-агенты и ТРИЗ.",
       "version": "0.5.1",
       "category": "productivity",
       "keywords": ["spydell", "requirements", "roadmap", "openspec", "sdd"]

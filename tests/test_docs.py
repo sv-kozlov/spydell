@@ -34,5 +34,22 @@ class LinkTests(unittest.TestCase):
         self.assertEqual(broken, [])
 
 
+class SkillInventoryTests(unittest.TestCase):
+    """Every skill directory has Codex metadata and a row in the README; descriptions name no stale count."""
+
+    def test_skills_listed(self):
+        import re
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        for skill in sorted(path.name for path in (ROOT / "skills").iterdir() if (path / "SKILL.md").exists()):
+            with self.subTest(skill=skill):
+                self.assertTrue((ROOT / "skills" / skill / "agents/openai.yaml").exists())
+                self.assertIn(f"`{skill}`", readme)
+        counts = re.compile(r"\b(восемь|девять|десять|одиннадцать|двенадцать|тринадцать)\s+навык", re.I)
+        for path in (ROOT / "INSTALL.md", ROOT / ".claude-plugin/marketplace.json", ROOT / ".claude-plugin/plugin.json",
+                     ROOT / ".codex-plugin/plugin.json"):
+            with self.subTest(file=path.name):
+                self.assertIsNone(counts.search(path.read_text(encoding="utf-8")))
+
+
 if __name__ == "__main__":
     unittest.main()

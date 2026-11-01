@@ -31,7 +31,7 @@ codex plugin add spydell@spydell
 npx skills@latest add sv-kozlov/spydell -g -a codex
 ```
 
-Или из клона репозитория: `python3 install.py` копирует десять навыков в `$CODEX_HOME/skills`
+Или из клона репозитория: `python3 install.py` копирует все навыки Spydell в `$CODEX_HOME/skills`
 (по умолчанию `~/.codex/skills`); другой каталог — `--skills-dir "/path/to/agent/skills"`.
 
 Устанавливайте навыки одним способом. Если раньше они копировались вручную
@@ -44,12 +44,15 @@ npx skills@latest add sv-kozlov/spydell -g -a codex
 без них Spydell идёт запасным путём.
 
 Если у вас установлен superpowers, его `brainstorming` и `writing-plans` при работе по Spydell не запускаются:
-замысел, требования и план ведёт Spydell. Удалять superpowers не нужно.
+замысел, требования и план ведёт Spydell. Удалять superpowers не нужно. Чтобы это правило срабатывало раньше, чем
+загрузится Spydell, допишите в AGENTS.md (CLAUDE.md) проекта блок
+[skills/spydell/assets/agents-block.md](skills/spydell/assets/agents-block.md): superpowers сам ставит AGENTS.md
+проекта выше своих навыков.
 
 ### Matt Pocock (обязательно)
 
 Spydell использует `research`, `domain-modeling`, `prototype`, `tdd`, `diagnosing-bugs`
-и `code-review`; по условиям — `wayfinder` и `handoff`. Они ставятся из marketplace Matt:
+и `code-review`; по условиям — `wayfinder`. Они ставятся из marketplace Matt:
 
 ```bash
 claude plugin marketplace add mattpocock/skills
