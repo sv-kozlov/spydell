@@ -1,4 +1,4 @@
 interface:
   display_name: "Spydell UI Design"
-  short_description: "Дерево экрана pen.dev для передачи во фронтенд"
+  short_description: "Дерево компонентов экрана для передачи во фронтенд"
   default_prompt: "Используй $spydell-ui-design, чтобы описать дерево экрана, его компоненты и состояния."
