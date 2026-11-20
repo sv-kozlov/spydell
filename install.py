@@ -139,7 +139,8 @@ def main():
     schema_sources = sorted(path for path in (ROOT / "openspec/schemas").iterdir() if path.is_dir())
     candidates = []
     if not args.project_only:
-        for source in sorted((ROOT / "skills").iterdir()):
+        for entrypoint in sorted((ROOT / "skills").glob("*/SKILL.md")):
+            source = entrypoint.parent
             candidates.append((source, args.skills_dir.expanduser().absolute() / source.name, f"skills/{source.name}"))
     if args.user_schema:
         for schema_source in schema_sources:

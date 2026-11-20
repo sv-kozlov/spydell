@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spydell UI Review"
+  short_description: "Ревью макета и сверка интерфейса с дизайном"
+  default_prompt: "Используй $spydell-ui-review, чтобы проверить экран и показать подтверждённые расхождения."
